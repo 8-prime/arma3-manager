@@ -1,0 +1,24 @@
+using ArmA3Manager.Application.Common.Interfaces;
+using ArmA3Manager.Application.Common.Models;
+using ArmA3Manager.Application.Services;
+using ArmA3Manager.Web.Endpoints;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.Configure<ManagerSettings>(
+    builder.Configuration.GetSection(ManagerSettings.Position));
+
+builder.Services.AddScoped<IServerManager, ServerManager>();
+builder.Services.AddScoped<IMissionsManager, MissionManager>();
+
+
+var app = builder.Build();
+
+app
+    .MapConfigEndpoints()
+    .MapManagementEndpoints()
+    .MapMissionEndpoints()
+    .MapModEndpoints();
+
+
+app.Run();
