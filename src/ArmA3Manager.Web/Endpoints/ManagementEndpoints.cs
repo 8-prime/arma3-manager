@@ -13,6 +13,7 @@ public static class ManagementEndpoints
     {
         var group = app.MapGroup("management");
         group.MapGet("", GetServerInfoAsync);
+        group.MapPost("", UpdateServer);
         return app;
     }
 

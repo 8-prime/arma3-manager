@@ -121,12 +121,11 @@ public class ServerManager : IServerManager
     public async Task Update()
     {
         Console.WriteLine("Downloading or updating Arma 3 Dedicated Server...");
-
+        var credentials = string.IsNullOrEmpty(_username) || string.IsNullOrEmpty(_password) ? "anonymous" : $"{_username} {_password}";
         var result = await Cli.Wrap(_steamCmdPath)
-            .WithArguments($"+login anonymous +force_install_dir \"{_serverDir}\" +app_update {ArmA3Constants.ArmA3ServerId} validate +quit")
+            .WithArguments($"+login {credentials} +force_install_dir \"{_serverDir}\" +app_update {ArmA3Constants.ArmA3ServerId} validate +quit")
             .WithValidation(CommandResultValidation.ZeroExitCode)
             .ExecuteBufferedAsync();
-
         Console.WriteLine(result.StandardOutput);
     }
 }

@@ -5,12 +5,9 @@ using ArmA3Manager.Web.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.Configure<ManagerSettings>(
-    builder.Configuration.GetSection(ManagerSettings.Position));
-
+builder.Services.Configure<ManagerSettings>(builder.Configuration);
 builder.Services.AddScoped<IServerManager, ServerManager>();
 builder.Services.AddScoped<IMissionsManager, MissionManager>();
-
 
 var app = builder.Build();
 
@@ -19,6 +16,6 @@ app
     .MapManagementEndpoints()
     .MapMissionEndpoints()
     .MapModEndpoints();
-
+app.MapGet("/healthz", () => "up");
 
 app.Run();
