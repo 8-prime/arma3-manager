@@ -5,6 +5,7 @@ using ArmA3Manager.Application.Common;
 using ArmA3Manager.Application.Common.Enums;
 using ArmA3Manager.Application.Common.Interfaces;
 using ArmA3Manager.Application.Common.Models;
+using ArmA3Manager.Application.Common.Models.Server;
 using CliWrap;
 using CliWrap.EventStream;
 using Microsoft.Extensions.Hosting;
@@ -12,10 +13,10 @@ using Microsoft.Extensions.Options;
 
 namespace ArmA3Manager.Application.Services;
 
-public class ServerManager : BackgroundService, IServerManager
+public class ServerManager : IServerManager
 {
     private readonly IUpdatesQueue<string> _updatesQueue;
-    private readonly ConcurrentDictionary<Guid, Task> _serverTasks = new ConcurrentDictionary<Guid, Task>();
+    private UpdateOperation? _updateTask;
     private readonly string _steamCmdPath;
     private readonly string _armaServerPath;
     private readonly string _serverDir;
@@ -127,11 +128,25 @@ public class ServerManager : BackgroundService, IServerManager
     /// </summary>
     public Guid Update()
     {
-        Console.WriteLine("Downloading or updating Arma 3 Dedicated Server...");
+        if (_updateTask != null)
+        {
+            return _updateTask.Id;
+        }
+
         var operationId = Guid.NewGuid();
         _updatesQueue.RegisterUpdater(operationId, out var writer);
-        _serverTasks.TryAdd(operationId, Task.Run(() => UpdateInternal(writer)));
+        var cts = new CancellationTokenSource();
+        _updateTask =
+            new UpdateOperation(operationId, Task.Run(() => UpdateInternal(writer, cts.Token), cts.Token), cts);
         return operationId;
+    }
+
+    public async Task CancelUpdate()
+    {
+        if (_updateTask == null) return;
+        await _updateTask.CancellationTokenSource.CancelAsync();
+        _updatesQueue.ClearUpdates(_updateTask.Id);
+        _updateTask = null;
     }
 
     public ChannelReader<string>? GetUpdatesReader(Guid updateId)
@@ -139,7 +154,7 @@ public class ServerManager : BackgroundService, IServerManager
         return _updatesQueue.GetUpdates(updateId);
     }
 
-    private async Task UpdateInternal(ChannelWriter<string> writer)
+    private async Task UpdateInternal(ChannelWriter<string> writer, CancellationToken token)
     {
         var credentials = string.IsNullOrEmpty(_username) || string.IsNullOrEmpty(_password)
             ? "anonymous"
@@ -149,31 +164,19 @@ public class ServerManager : BackgroundService, IServerManager
                 $"+login {credentials} +force_install_dir \"{_serverDir}\" +app_update {ArmA3Constants.ArmA3ServerId} validate +quit")
             .WithValidation(CommandResultValidation.ZeroExitCode);
 
-        await foreach (var evt in cmd.ListenAsync())
+        await foreach (var evt in cmd.ListenAsync(token))
         {
             if (evt is StandardOutputCommandEvent stdOut)
             {
-                await writer.WriteAsync(stdOut.Text);
+                await writer.WriteAsync(stdOut.Text, token);
             }
         }
-    }
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-    {
-        while (!stoppingToken.IsCancellationRequested)
+        writer.Complete();
+        if (_updateTask != null)
         {
-            if (_serverTasks.IsEmpty)
-            {
-                await Task.Delay(3000, stoppingToken);
-                continue;
-            }
-
-            _ = await Task.WhenAny(_serverTasks.Values);
-            var completed = _serverTasks.Where(t => t.Value.IsCompleted);
-            foreach (var completedTask in completed)
-            {
-                _serverTasks.TryRemove(completedTask.Key, out _);
-            }
+            _updatesQueue.ClearUpdates(_updateTask.Id);
+            _updateTask = null;
         }
     }
 }

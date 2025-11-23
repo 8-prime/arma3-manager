@@ -25,4 +25,9 @@ public class UpdatesQueue<T> : IUpdatesQueue<T>
         var channel = _updates.GetOrAdd(updateId, _ => Channel.CreateUnbounded<T>());
         writer = channel.Writer;
     }
+
+    public void ClearUpdates(Guid updateId)
+    {
+        _updates.TryRemove(updateId, out _);
+    }
 }

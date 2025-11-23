@@ -6,4 +6,5 @@ public interface IUpdatesQueue<T>
 {
     public ChannelReader<T>? GetUpdates(Guid updateId);
     public void RegisterUpdater(Guid updateId, out ChannelWriter<T> writer);
+    public void ClearUpdates(Guid updateId);
 }

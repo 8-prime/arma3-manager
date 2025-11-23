@@ -10,4 +10,9 @@
     <ProjectReference Include="..\ArmA3Manager.Application\ArmA3Manager.Application.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
+    <PackageReference Include="Scalar.AspNetCore" Version="2.11.0" />
+  </ItemGroup>
+
 </Project>

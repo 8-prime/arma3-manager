@@ -4,11 +4,12 @@ using Microsoft.Extensions.Hosting;
 
 namespace ArmA3Manager.Application.Common.Interfaces;
 
-public interface IServerManager: IHostedService
+public interface IServerManager
 {
     public Task StartServer();
     public Task StopServer();
     public Task<ServerInfo> GetServerInfo();
     public Guid Update();
+    public Task CancelUpdate();
     public ChannelReader<string>? GetUpdatesReader(Guid updateId);
 }

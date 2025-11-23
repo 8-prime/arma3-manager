@@ -7,14 +7,15 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ArmA3Manager.Web.Endpoints;
 
-public static class ManagementEndpoints
+public static class ServerManagementEndpoints
 {
-    public static WebApplication MapManagementEndpoints(this WebApplication app)
+    public static WebApplication MapServerManagementEndpoints(this WebApplication app)
     {
         var group = app.MapGroup("management");
         group.MapGet("", GetServerInfoAsync);
-        group.MapGet("updates/{id:Guid}", UpdateServer);
+        group.MapGet("updates/{id:Guid}", GetUpdateProgress);
         group.MapPost("updates", UpdateServer);
+        group.MapPost("updates/cancel", CancelServerUpdate);
         return app;
     }
 
@@ -29,7 +30,7 @@ public static class ManagementEndpoints
         return TypedResults.Ok(id);
     }
 
-    private static Results<NotFound, ServerSentEventsResult<string>> GetUpdateUpdates(Guid id,
+    private static Results<NotFound, ServerSentEventsResult<string>> GetUpdateProgress(Guid id,
         [FromServices] IServerManager manager, CancellationToken ct)
     {
         var events = manager.GetUpdatesReader(id);
@@ -39,5 +40,11 @@ public static class ManagementEndpoints
         }
 
         return TypedResults.ServerSentEvents(events.ReadAllAsync(ct));
+    }
+
+    private static async Task<Ok> CancelServerUpdate([FromServices] IServerManager manager, CancellationToken ct)
+    {
+        await manager.CancelUpdate();
+        return TypedResults.Ok();
     }
 }
