@@ -38,9 +38,15 @@
         const id = await res.json();
         eventSource = new EventSource(`/management/updates/${id}`);
 
-        eventSource.onmessage = (e) => {
+        eventSource.addEventListener("update", (e) => {
             appendLog({ text: e.data, type: "info" });
-        };
+        });
+
+        eventSource.addEventListener("done", (e) => {
+            appendLog({ text: "✅ Update completed", type: "info" });
+            eventSource?.close();
+            isRunning = false;
+        });
 
         eventSource.addEventListener("error", () => {
             appendLog({ text: "⚠ Stream disconnected", type: "warning" });

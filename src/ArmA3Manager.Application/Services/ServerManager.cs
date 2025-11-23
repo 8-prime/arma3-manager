@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using System.Threading.Channels;
 using ArmA3Manager.Application.Common;
 using ArmA3Manager.Application.Common.Enums;
@@ -15,6 +16,7 @@ namespace ArmA3Manager.Application.Services;
 
 public class ServerManager : IServerManager
 {
+    private static readonly Regex AnsiRegex = new(@"\x1B\[[0-9;]*[A-Za-z]", RegexOptions.Compiled);
     private readonly IUpdatesQueue<string> _updatesQueue;
     private UpdateOperation? _updateTask;
     private readonly string _steamCmdPath;
@@ -135,6 +137,7 @@ public class ServerManager : IServerManager
 
         var operationId = Guid.NewGuid();
         _updatesQueue.RegisterUpdater(operationId, out var writer);
+        writer.TryWrite("Update started");
         var cts = new CancellationTokenSource();
         _updateTask =
             new UpdateOperation(operationId, Task.Run(() => UpdateInternal(writer, cts.Token), cts.Token), cts);
@@ -168,10 +171,9 @@ public class ServerManager : IServerManager
         {
             if (evt is StandardOutputCommandEvent stdOut)
             {
-                await writer.WriteAsync(stdOut.Text, token);
+                await writer.WriteAsync(AnsiRegex.Replace(stdOut.Text, ""), token);
             }
         }
-
         writer.Complete();
         if (_updateTask != null)
         {

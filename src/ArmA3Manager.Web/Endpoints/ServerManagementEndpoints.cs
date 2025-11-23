@@ -2,6 +2,7 @@
 using ArmA3Manager.Application.Common.Interfaces;
 using ArmA3Manager.Application.Common.Models;
 using ArmA3Manager.Web.Common.DTOs;
+using ArmA3Manager.Web.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
@@ -39,7 +40,7 @@ public static class ServerManagementEndpoints
             return TypedResults.NotFound();
         }
 
-        return TypedResults.ServerSentEvents(events.ReadAllAsync(ct));
+        return TypedResults.ServerSentEvents(events.ReadAllAsync(ct).AsSseStream(ct));
     }
 
     private static async Task<Ok> CancelServerUpdate([FromServices] IServerManager manager, CancellationToken ct)

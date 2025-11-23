@@ -8,12 +8,12 @@ export default defineConfig({
   server: {
     proxy: {
       "/management": {
-        target: "http://localhost:5177",
+        target: "http://localhost:5000",
         changeOrigin: true,
         secure: false
       },
       "/healthz": {
-        target: "http://localhost:5177",
+        target: "http://localhost:5000",
         changeOrigin: true,
         secure: false
       }
