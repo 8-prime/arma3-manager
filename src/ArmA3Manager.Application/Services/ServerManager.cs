@@ -1,15 +1,21 @@
-﻿using ArmA3Manager.Application.Common;
+﻿using System.Collections.Concurrent;
+using System.Runtime.InteropServices;
+using System.Threading.Channels;
+using ArmA3Manager.Application.Common;
 using ArmA3Manager.Application.Common.Enums;
 using ArmA3Manager.Application.Common.Interfaces;
 using ArmA3Manager.Application.Common.Models;
 using CliWrap;
-using CliWrap.Buffered;
+using CliWrap.EventStream;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
 namespace ArmA3Manager.Application.Services;
 
-public class ServerManager : IServerManager
+public class ServerManager : BackgroundService, IServerManager
 {
+    private readonly IUpdatesQueue<string>  _updatesQueue;
+    private readonly ConcurrentDictionary<Guid, Task> _serverTasks = new ConcurrentDictionary<Guid, Task>();
     private readonly string _steamCmdPath;
     private readonly string _armaServerPath;
     private readonly string _serverDir;
@@ -18,8 +24,9 @@ public class ServerManager : IServerManager
 
     private System.Diagnostics.Process? _armaProcess;
 
-    public ServerManager(IOptions<ManagerSettings> managerSettings)
+    public ServerManager(IOptions<ManagerSettings> managerSettings, IUpdatesQueue<string> updatesQueue)
     {
+        _updatesQueue = updatesQueue;
         _steamCmdPath = managerSettings.Value.SteamCmdPath;
         _armaServerPath = managerSettings.Value.ArmaServerPath;
         _serverDir = managerSettings.Value.ServerDir;
@@ -118,14 +125,55 @@ public class ServerManager : IServerManager
     /// <summary>
     /// Update server (same as download for SteamCMD)
     /// </summary>
-    public async Task Update()
+    public Guid Update()
     {
         Console.WriteLine("Downloading or updating Arma 3 Dedicated Server...");
-        var credentials = string.IsNullOrEmpty(_username) || string.IsNullOrEmpty(_password) ? "anonymous" : $"{_username} {_password}";
-        var result = await Cli.Wrap(_steamCmdPath)
-            .WithArguments($"+login {credentials} +force_install_dir \"{_serverDir}\" +app_update {ArmA3Constants.ArmA3ServerId} validate +quit")
-            .WithValidation(CommandResultValidation.ZeroExitCode)
-            .ExecuteBufferedAsync();
-        Console.WriteLine(result.StandardOutput);
+        var opertionId = Guid.NewGuid();
+        _updatesQueue.RegisterUpdater(opertionId, out var writer);
+        _serverTasks.TryAdd(opertionId, Task.Run(() => UpdateInternal(writer)));
+        return opertionId;
+    }
+
+    public ChannelReader<string>? GetUpdatesReader(Guid updateId)
+    {
+        return _updatesQueue.GetUpdates(updateId);
+    }
+
+    private async Task UpdateInternal(ChannelWriter<string> writer)
+    {
+        var credentials = string.IsNullOrEmpty(_username) || string.IsNullOrEmpty(_password)
+            ? "anonymous"
+            : $"{_username} {_password}";
+        var cmd = Cli.Wrap(_steamCmdPath)
+            .WithArguments(
+                $"+login {credentials} +force_install_dir \"{_serverDir}\" +app_update {ArmA3Constants.ArmA3ServerId} validate +quit")
+            .WithValidation(CommandResultValidation.ZeroExitCode);
+        
+        await foreach (var evt in cmd.ListenAsync())
+        {
+            if (evt is StandardOutputCommandEvent stdOut)
+            {
+                await writer.WriteAsync(stdOut.Text);
+            }
+        }
+    }
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            if (_serverTasks.IsEmpty)
+            {
+                await Task.Delay(3000, stoppingToken);
+                continue;
+            }
+
+            _ = await Task.WhenAny(_serverTasks.Values);
+            var completed = _serverTasks.Where(t => t.Value.IsCompleted);
+            foreach (var completedTask in completed)
+            {
+                _serverTasks.TryRemove(completedTask.Key, out _);
+            }
+        }
     }
 }

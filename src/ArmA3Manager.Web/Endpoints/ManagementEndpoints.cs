@@ -13,6 +13,7 @@ public static class ManagementEndpoints
     {
         var group = app.MapGroup("management");
         group.MapGet("", GetServerInfoAsync);
+        group.MapGet("updates/{id:Guid}", UpdateServer);
         group.MapPost("", UpdateServer);
         return app;
     }
@@ -22,9 +23,21 @@ public static class ManagementEndpoints
         return TypedResults.Ok((await manager.GetServerInfo()).Map());
     }
 
-    private static async Task<Ok> UpdateServer([FromServices] IServerManager manager)
+    private static Ok<Guid> UpdateServer([FromServices] IServerManager manager)
     {
-        await manager.Update();
-        return TypedResults.Ok();
+        var id = manager.Update();
+        return TypedResults.Ok(id);
+    }
+
+    private static Results<NotFound, ServerSentEventsResult<string>> GetUpdateUpdates(Guid id,
+        [FromServices] IServerManager manager, CancellationToken ct)
+    {
+        var events = manager.GetUpdatesReader(id);
+        if (events is null)
+        {
+            return TypedResults.NotFound();
+        }
+
+        return TypedResults.ServerSentEvents(events.ReadAllAsync(ct));
     }
 }
