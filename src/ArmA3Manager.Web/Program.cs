@@ -6,8 +6,9 @@ using ArmA3Manager.Web.Endpoints;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.Configure<ManagerSettings>(builder.Configuration);
-builder.Services.AddScoped<IServerManager, ServerManager>();
-builder.Services.AddScoped<IMissionsManager, MissionManager>();
+builder.Services.AddSingleton<IServerManager, ServerManager>();
+builder.Services.AddHostedService<IServerManager>(sp => sp.GetRequiredService<IServerManager>());
+builder.Services.AddSingleton<IMissionsManager, MissionManager>();
 builder.Services.AddSingleton<IUpdatesQueue<string>, UpdatesQueue<string>>();
 
 var app = builder.Build();

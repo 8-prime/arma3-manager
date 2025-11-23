@@ -14,7 +14,7 @@ public static class ManagementEndpoints
         var group = app.MapGroup("management");
         group.MapGet("", GetServerInfoAsync);
         group.MapGet("updates/{id:Guid}", UpdateServer);
-        group.MapPost("", UpdateServer);
+        group.MapPost("updates", UpdateServer);
         return app;
     }
 

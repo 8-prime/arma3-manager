@@ -14,7 +14,7 @@ namespace ArmA3Manager.Application.Services;
 
 public class ServerManager : BackgroundService, IServerManager
 {
-    private readonly IUpdatesQueue<string>  _updatesQueue;
+    private readonly IUpdatesQueue<string> _updatesQueue;
     private readonly ConcurrentDictionary<Guid, Task> _serverTasks = new ConcurrentDictionary<Guid, Task>();
     private readonly string _steamCmdPath;
     private readonly string _armaServerPath;
@@ -128,10 +128,10 @@ public class ServerManager : BackgroundService, IServerManager
     public Guid Update()
     {
         Console.WriteLine("Downloading or updating Arma 3 Dedicated Server...");
-        var opertionId = Guid.NewGuid();
-        _updatesQueue.RegisterUpdater(opertionId, out var writer);
-        _serverTasks.TryAdd(opertionId, Task.Run(() => UpdateInternal(writer)));
-        return opertionId;
+        var operationId = Guid.NewGuid();
+        _updatesQueue.RegisterUpdater(operationId, out var writer);
+        _serverTasks.TryAdd(operationId, Task.Run(() => UpdateInternal(writer)));
+        return operationId;
     }
 
     public ChannelReader<string>? GetUpdatesReader(Guid updateId)
@@ -148,7 +148,7 @@ public class ServerManager : BackgroundService, IServerManager
             .WithArguments(
                 $"+login {credentials} +force_install_dir \"{_serverDir}\" +app_update {ArmA3Constants.ArmA3ServerId} validate +quit")
             .WithValidation(CommandResultValidation.ZeroExitCode);
-        
+
         await foreach (var evt in cmd.ListenAsync())
         {
             if (evt is StandardOutputCommandEvent stdOut)
