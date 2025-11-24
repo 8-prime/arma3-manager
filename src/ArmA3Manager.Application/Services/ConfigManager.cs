@@ -7,12 +7,12 @@ using Microsoft.VisualBasic;
 
 namespace ArmA3Manager.Application.Services;
 
-public class ConfigurationManager : IConfigManager
+public class ConfigManager : IConfigManager
 {
     private readonly string _configurationDirectory;
     private readonly string _configurationFileName;
 
-    public ConfigurationManager(IOptions<ManagerSettings> settings)
+    public ConfigManager(IOptions<ManagerSettings> settings)
     {
         _configurationDirectory = settings.Value.ConfigDir;
         _configurationFileName = settings.Value.ConfigPath;
@@ -27,7 +27,8 @@ public class ConfigurationManager : IConfigManager
 
         if (!File.Exists(_configurationFileName))
         {
-            await using var file = File.Create(_configurationDirectory);
+            Console.WriteLine("Creating configuration file");
+            await using var file = File.Create(_configurationFileName);
             await file.WriteAsync(Encoding.UTF8.GetBytes(ConfigConstants.DefaultConfig));
         }
     }

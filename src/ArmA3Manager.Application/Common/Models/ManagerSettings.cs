@@ -8,7 +8,7 @@ public class ManagerSettings
 
     public required string SteamUsername { get; set; }
     public required string SteamPassword { get; set; }
-    public string ConfigPath => Path.Join(ServerDir, "server.cfg");
+    public string ConfigPath => Path.Join(ConfigDir, "server.cfg");
     public required string ConfigDir { get; set; }
     public string MissionsDir => Path.Combine(ServerDir, "mpmissions");
 }
