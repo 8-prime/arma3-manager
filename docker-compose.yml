@@ -1,0 +1,20 @@
+services:
+  arma3-manager:
+    image: arma3-manager:latest
+    ports:
+      - 2306:2306
+      - 2305:2305
+      - 2304:2304
+      - 2303:2303
+      - 2302:2302
+      - 5000:5000
+    volumes:
+      - ./data/server:/arma3/server
+      - ./data/missions:/arma3/MPMissions
+      - ./data/workshop:/arma3/workshop
+      - ./data/config:/arma3/config
+    environment:
+      - SteamUsername=${SteamUsername}
+      - SteamPassword=${SteamPassword}
+      - ServerDir=${ServerDir}
+      - ConfigDir=${ConfigDir}
