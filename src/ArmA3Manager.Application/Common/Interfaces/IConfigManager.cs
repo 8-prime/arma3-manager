@@ -1,6 +1,6 @@
 ﻿namespace ArmA3Manager.Application.Common.Interfaces;
 
-public interface IConfigManager
+public interface IConfigManager : IInitializeable
 {
     
 }

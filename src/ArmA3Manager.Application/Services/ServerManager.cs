@@ -1,6 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using System.Threading.Channels;
 using ArmA3Manager.Application.Common;
 using ArmA3Manager.Application.Common.Enums;
@@ -9,7 +7,6 @@ using ArmA3Manager.Application.Common.Models;
 using ArmA3Manager.Application.Common.Models.Server;
 using CliWrap;
 using CliWrap.EventStream;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
 namespace ArmA3Manager.Application.Services;
@@ -25,7 +22,8 @@ public class ServerManager : IServerManager
     private readonly string _username;
     private readonly string _password;
 
-    private System.Diagnostics.Process? _armaProcess;
+    private Task? _serverTask;
+    private CancellationTokenSource? _serverCts;
 
     public ServerManager(IOptions<ManagerSettings> managerSettings, IUpdatesQueue<string> updatesQueue)
     {
@@ -37,9 +35,17 @@ public class ServerManager : IServerManager
         _password = managerSettings.Value.SteamPassword;
     }
 
-    public async Task StartServer()
+    public void StartServer()
     {
-        if (_armaProcess != null && !_armaProcess.HasExited)
+        if (!File.Exists(_armaServerPath))
+        {
+            return;
+        }
+
+        if (_updateTask is not null)
+            return;
+
+        if (_serverTask is not null && !_serverTask.IsCompleted)
         {
             Console.WriteLine("Server is already running.");
             return;
@@ -47,37 +53,48 @@ public class ServerManager : IServerManager
 
         Console.WriteLine("Starting Arma 3 Server...");
 
-        _armaProcess = new System.Diagnostics.Process
+        _serverCts = new CancellationTokenSource();
+
+        var cmd = Cli.Wrap(_armaServerPath)
+            .WithArguments("-config=server.cfg")
+            .WithWorkingDirectory(_serverDir);
+
+        // Run server in background, streaming logs
+        _serverTask = Task.Run(async () =>
         {
-            StartInfo = new System.Diagnostics.ProcessStartInfo
+            try
             {
-                FileName = _armaServerPath,
-                Arguments = "-config=server.cfg",
-                WorkingDirectory = _serverDir,
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            },
-            EnableRaisingEvents = true
-        };
+                await foreach (var ev in cmd.ListenAsync(_serverCts.Token))
+                {
+                    switch (ev)
+                    {
+                        case StandardOutputCommandEvent stdout:
+                            Console.WriteLine($"[Server] {stdout.Text}");
+                            break;
 
-        _armaProcess.OutputDataReceived += (sender, args) =>
-        {
-            if (!string.IsNullOrEmpty(args.Data))
-                Console.WriteLine($"[Server] {args.Data}");
-        };
+                        case StandardErrorCommandEvent stderr:
+                            Console.Error.WriteLine($"[Server ERROR] {stderr.Text}");
+                            break;
 
-        _armaProcess.ErrorDataReceived += (sender, args) =>
-        {
-            if (!string.IsNullOrEmpty(args.Data))
-                Console.Error.WriteLine($"[Server ERROR] {args.Data}");
-        };
+                        case StartedCommandEvent started:
+                            Console.WriteLine($"Server started (PID: {started.ProcessId})");
+                            break;
 
-        _armaProcess.Start();
-        _armaProcess.BeginOutputReadLine();
-        _armaProcess.BeginErrorReadLine();
-
-        await Task.Delay(500); // small delay to ensure process starts
+                        case ExitedCommandEvent exited:
+                            Console.WriteLine($"Server exited with code {exited.ExitCode}");
+                            break;
+                    }
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                Console.WriteLine("Server cancellation requested.");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Server crashed: {ex.Message}");
+            }
+        });
     }
 
     /// <summary>
@@ -85,7 +102,10 @@ public class ServerManager : IServerManager
     /// </summary>
     public async Task StopServer()
     {
-        if (_armaProcess == null || _armaProcess.HasExited)
+        if (_updateTask is not null)
+            return;
+
+        if (_serverTask == null || _serverTask.IsCompleted)
         {
             Console.WriteLine("Server is not running.");
             return;
@@ -95,8 +115,8 @@ public class ServerManager : IServerManager
 
         try
         {
-            _armaProcess.Kill();
-            await _armaProcess.WaitForExitAsync();
+            _serverCts?.CancelAsync(); // cancels streaming + sends SIGKILL to child
+            await _serverTask; // wait for cleanup
             Console.WriteLine("Server stopped.");
         }
         catch (Exception ex)
@@ -105,7 +125,8 @@ public class ServerManager : IServerManager
         }
         finally
         {
-            _armaProcess = null;
+            _serverTask = null;
+            _serverCts = null;
         }
     }
 
@@ -116,7 +137,7 @@ public class ServerManager : IServerManager
     {
         var info = new ServerInfo
         {
-            Status = _armaProcess is { HasExited: false } ? ServerStatus.Running : ServerStatus.Stopped,
+            Status = _serverTask is { IsCompleted: false } ? ServerStatus.Running : ServerStatus.Stopped,
             ServerPath = _serverDir,
             CurrentPlayers = 0, // Optional: add RPT parsing later
             MaxPlayers = 64
@@ -164,7 +185,7 @@ public class ServerManager : IServerManager
             : $"{_username} {_password}";
         var cmd = Cli.Wrap(_steamCmdPath)
             .WithArguments(
-                $"+login {credentials} +force_install_dir \"{_serverDir}\" +app_update {ArmA3Constants.ArmA3ServerId} validate +quit")
+                $"+force_install_dir \"{_serverDir}\" +login {credentials} +app_update {ArmA3Constants.ArmA3ServerId} validate +quit")
             .WithValidation(CommandResultValidation.ZeroExitCode);
 
         await foreach (var evt in cmd.ListenAsync(token))
@@ -174,11 +195,17 @@ public class ServerManager : IServerManager
                 await writer.WriteAsync(AnsiRegex.Replace(stdOut.Text, ""), token);
             }
         }
+
         writer.Complete();
         if (_updateTask != null)
         {
             _updatesQueue.ClearUpdates(_updateTask.Id);
             _updateTask = null;
         }
+    }
+
+    public Task Initialize()
+    {
+        return Task.CompletedTask;
     }
 }

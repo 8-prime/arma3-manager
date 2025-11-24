@@ -2,12 +2,13 @@
 
 public class ManagerSettings
 {
-    public const string Position = "ManagerSettings";
-
     public required string SteamCmdPath { get; set; } = "/steamcmd/steamcmd.sh";
-    public required string ArmaServerPath { get; set; }
+    public string ArmaServerPath => Path.Join(ServerDir, "arma3server_x64");
     public required string ServerDir { get; set; }
 
     public required string SteamUsername { get; set; }
     public required string SteamPassword { get; set; }
+    public string ConfigPath => Path.Join(ServerDir, "server.cfg");
+    public required string ConfigDir { get; set; }
+    public string MissionsDir => Path.Combine(ServerDir, "mpmissions");
 }

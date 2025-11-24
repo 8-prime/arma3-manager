@@ -1,6 +1,5 @@
 ﻿using ArmA3Manager.Application.Common.Extensions;
 using ArmA3Manager.Application.Common.Interfaces;
-using ArmA3Manager.Application.Common.Models;
 using ArmA3Manager.Web.Common.DTOs;
 using ArmA3Manager.Web.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -17,6 +16,8 @@ public static class ServerManagementEndpoints
         group.MapGet("updates/{id:Guid}", GetUpdateProgress);
         group.MapPost("updates", UpdateServer);
         group.MapPost("updates/cancel", CancelServerUpdate);
+        group.MapPost("start", StartServerUpdate);
+        group.MapPost("stop", StopServerUpdate);
         return app;
     }
 
@@ -46,6 +47,18 @@ public static class ServerManagementEndpoints
     private static async Task<Ok> CancelServerUpdate([FromServices] IServerManager manager, CancellationToken ct)
     {
         await manager.CancelUpdate();
+        return TypedResults.Ok();
+    }
+
+    private static Ok StartServerUpdate([FromServices] IServerManager manager)
+    {
+        manager.StartServer();
+        return TypedResults.Ok();
+    }
+
+    private static async Task<Ok> StopServerUpdate([FromServices] IServerManager manager)
+    {
+        await manager.StopServer();
         return TypedResults.Ok();
     }
 }

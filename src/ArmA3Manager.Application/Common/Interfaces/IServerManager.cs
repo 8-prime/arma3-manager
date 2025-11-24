@@ -4,9 +4,9 @@ using Microsoft.Extensions.Hosting;
 
 namespace ArmA3Manager.Application.Common.Interfaces;
 
-public interface IServerManager
+public interface IServerManager : IInitializeable
 {
-    public Task StartServer();
+    public void StartServer();
     public Task StopServer();
     public Task<ServerInfo> GetServerInfo();
     public Guid Update();

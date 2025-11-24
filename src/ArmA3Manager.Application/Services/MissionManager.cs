@@ -11,16 +11,14 @@ public class MissionManager : IMissionsManager
 {
     private readonly string _mpMissionsDir;
     private readonly string _serverDir;
-    private readonly string _armaServerPath;
     private readonly string _steamCmdPath;
 
 
     public MissionManager(IOptions<ManagerSettings> managerSettings)
     {
         _steamCmdPath = managerSettings.Value.SteamCmdPath;
-        _armaServerPath = managerSettings.Value.ArmaServerPath;
         _serverDir = managerSettings.Value.ServerDir;
-        _mpMissionsDir = Path.Combine(_serverDir, "MPMissions");
+        _mpMissionsDir = managerSettings.Value.MissionsDir;
         Directory.CreateDirectory(_mpMissionsDir);
     }
 
@@ -86,5 +84,10 @@ public class MissionManager : IMissionsManager
     public Task DeleteMission(string missionLink)
     {
         throw new NotImplementedException();
+    }
+
+    public Task Initialize()
+    {
+        return Task.CompletedTask;
     }
 }

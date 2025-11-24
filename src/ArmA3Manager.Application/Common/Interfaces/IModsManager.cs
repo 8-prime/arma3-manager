@@ -2,7 +2,7 @@
 
 namespace ArmA3Manager.Application.Common.Interfaces;
 
-public interface IModsManager
+public interface IModsManager : IInitializeable
 {
     public Task<ModInfo> LoadMod(string modLink);
     public Task UpdateMods();

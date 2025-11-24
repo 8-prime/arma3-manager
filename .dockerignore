@@ -22,3 +22,6 @@ obj/
 # Ignore local development secrets
 appsettings.Development.json
 .env
+
+frontend/
+data/

@@ -38,14 +38,13 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
-WORKDIR /arma3
+WORKDIR /app
 
 # Copy published .NET app from build stage
-COPY --from=build /app/publish ./app
+COPY --from=build /app/publish .
 
 # Install .NET runtime
-RUN wget https://dot.net/v1/dotnet-install.sh -O dotnet-install.sh && \
-    curl -L https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh &&  \
+RUN curl -L https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh &&  \
     chmod +x ./dotnet-install.sh && \
     ./dotnet-install.sh --version latest --runtime aspnetcore
 
@@ -60,17 +59,18 @@ RUN mkdir -p /steamcmd && \
     rm steamcmd_linux.tar.gz
 
 ENV PATH="/steamcmd:${PATH}"
-ENV Urls="http://[::]:5000"
+ENV Urls="http://+:5000"
 
 # Create directories for Arma server and missions
 RUN mkdir -p /arma3/server
 RUN mkdir -p /arma3/MPMissions
 RUN mkdir -p /arma3/workshop
+RUN mkdir -p /arma3/config
 
 ENV ServerDir=/arma3/server
 
 # Set working directory to .NET app
-WORKDIR /arma3/app
+WORKDIR /app
 
 # Start the .NET Web API
 ENTRYPOINT ["dotnet", "ArmA3Manager.Web.dll"]

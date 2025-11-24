@@ -2,7 +2,7 @@
 
 namespace ArmA3Manager.Application.Common.Interfaces;
 
-public interface IMissionsManager
+public interface IMissionsManager : IInitializeable
 {
     public Task<MissionInfo?> LoadMission(string missionLink);
     public Task UpdateMissions();
