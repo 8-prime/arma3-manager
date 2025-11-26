@@ -4,8 +4,7 @@ namespace ArmA3Manager.Web.Common.DTOs;
 
 public class ServerInfoDTO
 {
-    public bool Initialized { get; set; }
-    public bool IsRunning { get; set; }
+    public bool Ready { get; set; }
     public int CurrentPlayers { get; set; }
     public int MaxPlayers { get; set; }
     public ServerStatus Status { get; set; } = ServerStatus.NotInitialized;

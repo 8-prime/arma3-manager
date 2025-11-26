@@ -13,6 +13,7 @@ public static class ServerInfoExtensions
             CurrentPlayers = info.CurrentPlayers,
             MaxPlayers = info.MaxPlayers,
             Status = info.Status,
+            Ready = info.Ready
         };
     }
 }

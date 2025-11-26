@@ -1,5 +1,9 @@
-﻿namespace ArmA3Manager.Application.Common.Enums;
+﻿
+using System.Text.Json.Serialization;
 
+namespace ArmA3Manager.Application.Common.Enums;
+
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum ServerStatus
 {
     NotInitialized = 0,

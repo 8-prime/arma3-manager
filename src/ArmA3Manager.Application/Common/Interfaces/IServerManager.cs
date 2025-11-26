@@ -6,6 +6,7 @@ namespace ArmA3Manager.Application.Common.Interfaces;
 
 public interface IServerManager : IInitializeable
 {
+    public bool Ready { get; }
     public void StartServer();
     public Task StopServer();
     public Task<ServerInfo> GetServerInfo();

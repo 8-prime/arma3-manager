@@ -11,4 +11,5 @@ public class ManagerSettings
     public string ConfigPath => Path.Join(ConfigDir, "server.cfg");
     public required string ConfigDir { get; set; }
     public string MissionsDir => Path.Combine(ServerDir, "mpmissions");
+    public bool AutoStartServer { get; set; } = true;
 }

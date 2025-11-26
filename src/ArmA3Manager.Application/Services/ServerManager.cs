@@ -21,6 +21,7 @@ public class ServerManager : IServerManager
     private readonly string _serverDir;
     private readonly string _username;
     private readonly string _password;
+    private readonly bool _autoStartServer;
 
     private Task? _serverTask;
     private CancellationTokenSource? _serverCts;
@@ -33,7 +34,10 @@ public class ServerManager : IServerManager
         _serverDir = managerSettings.Value.ServerDir;
         _username = managerSettings.Value.SteamUsername;
         _password = managerSettings.Value.SteamPassword;
+        _autoStartServer = managerSettings.Value.AutoStartServer;
     }
+
+    public bool Ready { get; private set; }
 
     public void StartServer()
     {
@@ -204,8 +208,24 @@ public class ServerManager : IServerManager
         }
     }
 
-    public Task Initialize()
+    public async Task Initialize()
     {
-        return Task.CompletedTask;
+        var op = Update();
+        var reader = GetUpdatesReader(op)?.ReadAllAsync();
+        if (reader is null)
+        {
+            return;
+        }
+
+        await foreach (var updateOperation in reader)
+        {
+            Console.WriteLine(updateOperation);
+        }
+
+        Ready = true;
+        if (_autoStartServer)
+        {
+            StartServer();
+        }
     }
 }

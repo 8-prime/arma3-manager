@@ -13,6 +13,7 @@ public static class ServerManagementEndpoints
     {
         var group = app.MapGroup("management");
         group.MapGet("", GetServerInfoAsync);
+        group.MapGet("ready", GetUpdateProgress);
         group.MapGet("updates/{id:Guid}", GetUpdateProgress);
         group.MapPost("updates", UpdateServer);
         group.MapPost("updates/cancel", CancelServerUpdate);
@@ -20,7 +21,7 @@ public static class ServerManagementEndpoints
         group.MapPost("stop", StopServerUpdate);
         return app;
     }
-
+    
     private static async Task<Ok<ServerInfoDTO>> GetServerInfoAsync([FromServices] IServerManager manager)
     {
         return TypedResults.Ok((await manager.GetServerInfo()).Map());
