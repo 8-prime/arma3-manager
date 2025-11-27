@@ -25,6 +25,8 @@ public class ServerManager : IServerManager
     private readonly string _password;
     private readonly bool _autoStartServer;
     private readonly RingBuffer<ServerLogEntry> _serverLogBuffer;
+    private ServerStatus _serverStatus = ServerStatus.NotInitialized;
+    private DateTime? _runningSince;
 
     private Task? _serverTask;
     private CancellationTokenSource? _serverCts;
@@ -40,8 +42,6 @@ public class ServerManager : IServerManager
         _password = managerSettings.Value.SteamPassword;
         _autoStartServer = managerSettings.Value.AutoStartServer;
     }
-
-    public bool Ready { get; private set; }
 
     public void StartServer()
     {
@@ -67,7 +67,6 @@ public class ServerManager : IServerManager
             .WithArguments("-config=server.cfg")
             .WithWorkingDirectory(_serverDir);
 
-        // Run server in background, streaming logs
         _serverTask = Task.Run(async () =>
         {
             try
@@ -104,6 +103,8 @@ public class ServerManager : IServerManager
                                 Timestamp = DateTime.UtcNow,
                             });
                             Console.WriteLine($"Server started (PID: {started.ProcessId})");
+                            _serverStatus = ServerStatus.Running;
+                            _runningSince = DateTime.UtcNow;
                             break;
 
                         case ExitedCommandEvent exited:
@@ -114,6 +115,7 @@ public class ServerManager : IServerManager
                                 Timestamp = DateTime.UtcNow,
                             });
                             Console.WriteLine($"Server exited with code {exited.ExitCode}");
+                            _serverStatus = ServerStatus.Stopped;
                             break;
                     }
                 }
@@ -149,6 +151,8 @@ public class ServerManager : IServerManager
         {
             _serverCts?.CancelAsync(); // cancels streaming + sends SIGKILL to child
             await _serverTask; // wait for cleanup
+            _serverStatus = ServerStatus.Stopped;
+            _runningSince = null;
             Console.WriteLine("Server stopped.");
         }
         catch (Exception ex)
@@ -169,10 +173,11 @@ public class ServerManager : IServerManager
     {
         var info = new ServerInfo
         {
-            Status = _serverTask is { IsCompleted: false } ? ServerStatus.Running : ServerStatus.Stopped,
+            Status = _serverStatus,
             ServerPath = _serverDir,
             CurrentPlayers = 0, // Optional: add RPT parsing later
-            MaxPlayers = 64
+            MaxPlayers = 64,
+            RunningSince = _runningSince
         };
 
         return Task.FromResult(info);
@@ -217,6 +222,7 @@ public class ServerManager : IServerManager
 
     private async Task UpdateInternal(ChannelWriter<string> writer, CancellationToken token)
     {
+        _serverStatus = ServerStatus.Updating;
         var credentials = string.IsNullOrEmpty(_username) || string.IsNullOrEmpty(_password)
             ? "anonymous"
             : $"{_username} {_password}";
@@ -234,6 +240,7 @@ public class ServerManager : IServerManager
         }
 
         writer.Complete();
+        _serverStatus = ServerStatus.Initialized;
         if (_updateTask != null)
         {
             _updatesQueue.ClearUpdates(_updateTask.Id);
@@ -255,7 +262,6 @@ public class ServerManager : IServerManager
             Console.WriteLine(updateOperation);
         }
 
-        Ready = true;
         if (_autoStartServer)
         {
             StartServer();

@@ -1,23 +1,14 @@
+import path from "path"
+import tailwindcss from "@tailwindcss/vite"
 import { defineConfig } from 'vite'
-import { svelte } from '@sveltejs/vite-plugin-svelte'
-import tailwindcss from '@tailwindcss/vite'
+import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [svelte(), tailwindcss()],
-  server: {
-    proxy: {
-      "/management": {
-        target: "http://localhost:5000",
-        changeOrigin: true,
-        secure: false
-      },
-      "/healthz": {
-        target: "http://localhost:5000",
-        changeOrigin: true,
-        secure: false
-      }
-    }
-  }
+  plugins: [react(), tailwindcss()],
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
 })
-

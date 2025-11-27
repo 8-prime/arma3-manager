@@ -13,7 +13,6 @@ public static class ServerManagementEndpoints
     {
         var group = app.MapGroup("management");
         group.MapGet("", GetServerInfoAsync);
-        group.MapGet("ready", GetIsServerReady);
         group.MapGet("updates/{id:Guid}", GetUpdateProgress);
         group.MapGet("logs", GetServerLogs);
         group.MapPost("updates", UpdateServer);
@@ -28,10 +27,6 @@ public static class ServerManagementEndpoints
         return TypedResults.Ok(manager.GetServerLogs().Select(e => e.Map()));
     }
 
-    private static Ok<bool> GetIsServerReady([FromServices] IServerManager manager)
-    {
-        return TypedResults.Ok(manager.Ready);
-    }
 
     private static async Task<Ok<ServerInfoDTO>> GetServerInfoAsync([FromServices] IServerManager manager)
     {
