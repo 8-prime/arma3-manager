@@ -1,9 +1,33 @@
+import { useEffect, useState } from "react"
 import { ConfigEditor } from "./components/config-editor"
 import { ServerControls } from "./components/server-controls"
 import { ServerStatus } from "./components/server-status"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs"
+import type { ServerInfoDTO } from "./api/types"
+import { getServerInfo } from "./api/server-management"
 
 function App() {
+  const [serverInfo, setServerInfo] = useState<ServerInfoDTO | undefined>();
+
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function fetchInfo() {
+      const data = await getServerInfo();
+      if (isMounted) setServerInfo(data);
+    }
+
+    fetchInfo();
+
+    const handle = setInterval(fetchInfo, 3000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(handle);
+    };
+  }, []);
+
 
   return (
     <div className="min-h-screen bg-background">
@@ -26,7 +50,7 @@ function App() {
                 <p className="text-sm text-muted-foreground">Control Panel</p>
               </div>
             </div>
-            <ServerStatus />
+            {!!serverInfo && <ServerStatus serverInfo={serverInfo} />}
           </div>
         </div>
       </header>
@@ -35,7 +59,7 @@ function App() {
         <div className="space-y-6">
           <ServerControls />
 
-          <Tabs defaultValue="missions" className="w-full">
+          <Tabs defaultValue="config" className="w-full">
             <TabsList className="grid w-full grid-cols-3 lg:w-auto">
               {/* <TabsTrigger value="missions">Missions</TabsTrigger>
               <TabsTrigger value="players">Players</TabsTrigger> */}
