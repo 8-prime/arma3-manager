@@ -5,9 +5,9 @@ namespace ArmA3Manager.Application.Common.Extensions;
 
 public static class ServerInfoExtensions
 {
-    public static ServerInfoDTO Map(this ServerInfo info)
+    public static ServerInfoDto Map(this ServerInfo info)
     {
-        return new ServerInfoDTO
+        return new ServerInfoDto
         {
             ServerPath = info.ServerPath,
             CurrentPlayers = info.CurrentPlayers,

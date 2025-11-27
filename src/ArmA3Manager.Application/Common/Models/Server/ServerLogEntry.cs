@@ -4,7 +4,7 @@ namespace ArmA3Manager.Application.Common.Models.Server;
 
 public class ServerLogEntry
 {
-    public DateTime Timestamp { get; set; }
-    public ServerLogSeverity Severity { get; set; }
-    public string Message { get; set; }
+    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+    public ServerLogSeverity Severity { get; set; } = ServerLogSeverity.Info;
+    public required string Message { get; set; }
 }

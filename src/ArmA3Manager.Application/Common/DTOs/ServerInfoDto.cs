@@ -2,7 +2,7 @@
 
 namespace ArmA3Manager.Web.Common.DTOs;
 
-public class ServerInfoDTO
+public class ServerInfoDto
 {
     public int CurrentPlayers { get; set; }
     public int MaxPlayers { get; set; }

@@ -1,10 +1,10 @@
 ﻿using ArmA3Manager.Application.Common.Enums;
 
-namespace ArmA3Manager.Web.Common.DTOs;
+namespace ArmA3Manager.Application.Common.DTOs;
 
-public class ServerLogEntryDTO
+public class ServerLogEntryDto
 {
     public DateTime Timestamp { get; set; }
     public ServerLogSeverity Severity { get; set; }
-    public string Message { get; set; }
+    public required string Message { get; set; }
 }

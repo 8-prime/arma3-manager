@@ -4,7 +4,7 @@ public static class MissionsEndpoints
 {
     public static WebApplication MapMissionEndpoints(this WebApplication app)
     {
-        var group = app.MapGroup("missions");
+        var group = app.MapGroup("api/missions");
         return app;
     }
 }

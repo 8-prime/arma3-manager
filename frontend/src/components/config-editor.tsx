@@ -5,35 +5,21 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Save, RotateCcw } from "lucide-react"
 import { useState } from "react"
+import { getConfig, resetConfig, setConfig } from "@/api/config"
 
-const DEFAULT_CONFIG = {
-    hostname: "My ArmA3 Server",
-    password: "",
-    passwordAdmin: "adminpass123",
-    maxPlayers: 32,
-    motd: ["Welcome to our ArmA3 Server!", "Have fun and follow the rules."],
-    voteThreshold: 0.33,
-    voteMissionPlayers: 3,
-    persistent: true,
-    battlEye: true,
-    verifySignatures: 2,
-    allowedFilePatching: 1,
-}
 
 export function ConfigEditor() {
-    const [config, setConfig] = useState(DEFAULT_CONFIG)
     const [rawConfig, setRawConfig] = useState("")
 
-    const handleSave = () => {
-        console.log("[v0] Saving configuration:", config)
+    const handleSave = async () => {
+        await setConfig({
+            configurationString: rawConfig
+        })
     }
 
-    const handleReset = () => {
-        setConfig(DEFAULT_CONFIG)
-    }
-
-    const updateConfig = (key: string, value: any) => {
-        setConfig({ ...config, [key]: value })
+    const handleReset = async () => {
+        await resetConfig();
+        setRawConfig((await getConfig()).configurationString);
     }
 
     return (
@@ -45,7 +31,7 @@ export function ConfigEditor() {
                 </CardHeader>
                 <CardContent>
                     <Textarea
-                        value={rawConfig || JSON.stringify(config, null, 2)}
+                        value={rawConfig}
                         onChange={(e: any) => setRawConfig(e.target.value)}
                         rows={20}
                         className="font-mono text-sm"

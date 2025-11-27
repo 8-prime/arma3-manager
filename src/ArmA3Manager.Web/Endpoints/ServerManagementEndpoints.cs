@@ -1,5 +1,8 @@
-﻿using ArmA3Manager.Application.Common.Extensions;
+﻿using ArmA3Manager.Application.Common.DTOs;
+using ArmA3Manager.Application.Common.Enums;
+using ArmA3Manager.Application.Common.Extensions;
 using ArmA3Manager.Application.Common.Interfaces;
+using ArmA3Manager.Application.Common.Models.Server;
 using ArmA3Manager.Web.Common.DTOs;
 using ArmA3Manager.Web.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -11,7 +14,7 @@ public static class ServerManagementEndpoints
 {
     public static WebApplication MapServerManagementEndpoints(this WebApplication app)
     {
-        var group = app.MapGroup("management");
+        var group = app.MapGroup("api/management");
         group.MapGet("", GetServerInfoAsync);
         group.MapGet("updates/{id:Guid}", GetUpdateProgress);
         group.MapGet("logs", GetServerLogs);
@@ -22,13 +25,13 @@ public static class ServerManagementEndpoints
         return app;
     }
 
-    private static Ok<IEnumerable<ServerLogEntryDTO>> GetServerLogs([FromServices] IServerManager manager)
+    private static Ok<IEnumerable<ServerLogEntryDto>> GetServerLogs([FromServices] IServerManager manager)
     {
         return TypedResults.Ok(manager.GetServerLogs().Select(e => e.Map()));
     }
 
 
-    private static async Task<Ok<ServerInfoDTO>> GetServerInfoAsync([FromServices] IServerManager manager)
+    private static async Task<Ok<ServerInfoDto>> GetServerInfoAsync([FromServices] IServerManager manager)
     {
         return TypedResults.Ok((await manager.GetServerInfo()).Map());
     }
@@ -39,7 +42,7 @@ public static class ServerManagementEndpoints
         return TypedResults.Ok(id);
     }
 
-    private static Results<NotFound, ServerSentEventsResult<string>> GetUpdateProgress(Guid id,
+    private static Results<NotFound, ServerSentEventsResult<ServerLogEntryDto>> GetUpdateProgress(Guid id,
         [FromServices] IServerManager manager, CancellationToken ct)
     {
         var events = manager.GetUpdatesReader(id);
@@ -48,7 +51,13 @@ public static class ServerManagementEndpoints
             return TypedResults.NotFound();
         }
 
-        return TypedResults.ServerSentEvents(events.ReadAllAsync(ct).AsSseStream(ct));
+        return TypedResults.ServerSentEvents(events.ReadAllAsync(ct).Select(i => i.Map()).AsSseStream(
+            new ServerLogEntryDto
+            {
+                Message = "Update complete",
+                Severity = ServerLogSeverity.Info,
+                Timestamp = DateTime.UtcNow
+            }, ct));
     }
 
     private static async Task<Ok> CancelServerUpdate([FromServices] IServerManager manager, CancellationToken ct)

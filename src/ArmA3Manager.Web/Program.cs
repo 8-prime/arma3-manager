@@ -1,5 +1,6 @@
 using ArmA3Manager.Application.Common.Interfaces;
 using ArmA3Manager.Application.Common.Models;
+using ArmA3Manager.Application.Common.Models.Server;
 using ArmA3Manager.Application.Services;
 using ArmA3Manager.Web.Endpoints;
 using Scalar.AspNetCore;
@@ -15,6 +16,7 @@ builder.Services.AddSingleton<IInitializeable>(sp => sp.GetRequiredService<IMiss
 builder.Services.AddSingleton<IConfigManager, ConfigManager>();
 builder.Services.AddSingleton<IInitializeable>(sp => sp.GetRequiredService<IConfigManager>());
 builder.Services.AddSingleton<IUpdatesQueue<string>, UpdatesQueue<string>>();
+builder.Services.AddSingleton<IUpdatesQueue<ServerLogEntry>, UpdatesQueue<ServerLogEntry>>();
 
 builder.Services.AddOpenApi();
 

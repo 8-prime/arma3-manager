@@ -1,6 +1,5 @@
 ﻿using System.Text.RegularExpressions;
 using System.Threading.Channels;
-using ArmA3Manager.Application.Common;
 using ArmA3Manager.Application.Common.Constants;
 using ArmA3Manager.Application.Common.DataTypes;
 using ArmA3Manager.Application.Common.Enums;
@@ -16,7 +15,7 @@ namespace ArmA3Manager.Application.Services;
 public class ServerManager : IServerManager
 {
     private static readonly Regex AnsiRegex = new(@"\x1B\[[0-9;]*[A-Za-z]", RegexOptions.Compiled);
-    private readonly IUpdatesQueue<string> _updatesQueue;
+    private readonly IUpdatesQueue<ServerLogEntry> _updatesQueue;
     private UpdateOperation? _updateTask;
     private readonly string _steamCmdPath;
     private readonly string _armaServerPath;
@@ -31,7 +30,7 @@ public class ServerManager : IServerManager
     private Task? _serverTask;
     private CancellationTokenSource? _serverCts;
 
-    public ServerManager(IOptions<ManagerSettings> managerSettings, IUpdatesQueue<string> updatesQueue)
+    public ServerManager(IOptions<ManagerSettings> managerSettings, IUpdatesQueue<ServerLogEntry> updatesQueue)
     {
         _serverLogBuffer = new RingBuffer<ServerLogEntry>(500);
         _updatesQueue = updatesQueue;
@@ -195,7 +194,12 @@ public class ServerManager : IServerManager
 
         var operationId = Guid.NewGuid();
         _updatesQueue.RegisterUpdater(operationId, out var writer);
-        writer.TryWrite("Update started");
+        writer.TryWrite(new ServerLogEntry
+        {
+            Message = "Update started",
+            Severity = ServerLogSeverity.Info,
+            Timestamp = DateTime.UtcNow,
+        });
         var cts = new CancellationTokenSource();
         _updateTask =
             new UpdateOperation(operationId, Task.Run(() => UpdateInternal(writer, cts.Token), cts.Token), cts);
@@ -210,7 +214,7 @@ public class ServerManager : IServerManager
         _updateTask = null;
     }
 
-    public ChannelReader<string>? GetUpdatesReader(Guid updateId)
+    public ChannelReader<ServerLogEntry>? GetUpdatesReader(Guid updateId)
     {
         return _updatesQueue.GetUpdates(updateId);
     }
@@ -220,7 +224,7 @@ public class ServerManager : IServerManager
         return _serverLogBuffer.Get();
     }
 
-    private async Task UpdateInternal(ChannelWriter<string> writer, CancellationToken token)
+    private async Task UpdateInternal(ChannelWriter<ServerLogEntry> writer, CancellationToken token)
     {
         _serverStatus = ServerStatus.Updating;
         var credentials = string.IsNullOrEmpty(_username) || string.IsNullOrEmpty(_password)
@@ -231,11 +235,29 @@ public class ServerManager : IServerManager
                 $"+force_install_dir \"{_serverDir}\" +login {credentials} +app_update {ArmA3Constants.ArmA3ServerId} validate +quit")
             .WithValidation(CommandResultValidation.ZeroExitCode);
 
-        await foreach (var evt in cmd.ListenAsync(token))
+        await foreach (var ev in cmd.ListenAsync(token))
         {
-            if (evt is StandardOutputCommandEvent stdOut)
+            switch (ev)
             {
-                await writer.WriteAsync(AnsiRegex.Replace(stdOut.Text, ""), token);
+                case StandardOutputCommandEvent stdout:
+                    await writer.WriteAsync(new ServerLogEntry
+                    {
+                        Message = AnsiRegex.Replace(stdout.Text, ""),
+                        Severity = ServerLogSeverity.Info,
+                        Timestamp = DateTime.UtcNow,
+                    }, token);
+                    Console.WriteLine($"[Server] {stdout.Text}");
+                    break;
+
+                case StandardErrorCommandEvent stderr:
+                    await writer.WriteAsync(new ServerLogEntry
+                    {
+                        Message = AnsiRegex.Replace(stderr.Text, ""),
+                        Severity = ServerLogSeverity.Error,
+                        Timestamp = DateTime.UtcNow,
+                    }, token);
+                    Console.Error.WriteLine($"[Server ERROR] {stderr.Text}");
+                    break;
             }
         }
 

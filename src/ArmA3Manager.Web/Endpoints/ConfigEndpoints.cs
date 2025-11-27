@@ -9,7 +9,7 @@ public static class ConfigEndpoints
 {
     public static WebApplication MapConfigEndpoints(this WebApplication app)
     {
-        var group = app.MapGroup("config");
+        var group = app.MapGroup("api/config");
         group.MapGet("", GetConfig);
         group.MapPost("", SetConfig);
         group.MapPost("reset", ResetConfig);

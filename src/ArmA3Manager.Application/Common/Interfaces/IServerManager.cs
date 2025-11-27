@@ -12,6 +12,6 @@ public interface IServerManager : IInitializeable
     public Task<ServerInfo> GetServerInfo();
     public Guid Update();
     public Task CancelUpdate();
-    public ChannelReader<string>? GetUpdatesReader(Guid updateId);
+    public ChannelReader<ServerLogEntry>? GetUpdatesReader(Guid updateId);
     public IEnumerable<ServerLogEntry> GetServerLogs();
 }
