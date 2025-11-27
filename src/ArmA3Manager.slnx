@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/Tests/">
+    <Project Path="ArmA3Manager.Application.Tests/ArmA3Manager.Application.Tests.csproj" />
+  </Folder>
   <Project Path="ArmA3Manager.Application/ArmA3Manager.Application.csproj" />
   <Project Path="ArmA3Manager.Web/ArmA3Manager.Web.csproj" />
 </Solution>

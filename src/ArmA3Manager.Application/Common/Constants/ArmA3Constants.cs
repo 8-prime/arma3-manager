@@ -1,4 +1,4 @@
-﻿namespace ArmA3Manager.Application.Common;
+﻿namespace ArmA3Manager.Application.Common.Constants;
 
 public class ArmA3Constants
 {

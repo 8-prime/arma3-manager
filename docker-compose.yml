@@ -2,13 +2,19 @@ services:
   arma3-manager:
     image: arma3-manager:latest
     ports:
-      - 2302:2302/udp
-      - 2303:2303/udp
-      - 2304:2304/udp
-      - 2305:2305/udp
-      - 2306:2306/udp
-      - 2344:2344/tcp
-      - 2345:2345/udp
+      - "2302:2302/udp"
+      - "2303:2303/udp"
+      - "2304:2304/udp"
+      - "2305:2305/udp"
+      - "2306:2306/udp"
+
+      # BE master port
+      - "2344:2344/tcp"
+      - "2344:2344/udp"
+
+      # BE file transfer port
+      - "2345:2345/udp"
+      # Manager port
       - 5000:5000
     volumes:
       - ./data/server:/arma3/server

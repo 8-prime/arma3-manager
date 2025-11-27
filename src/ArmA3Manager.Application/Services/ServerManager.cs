@@ -1,6 +1,8 @@
 ﻿using System.Text.RegularExpressions;
 using System.Threading.Channels;
 using ArmA3Manager.Application.Common;
+using ArmA3Manager.Application.Common.Constants;
+using ArmA3Manager.Application.Common.DataTypes;
 using ArmA3Manager.Application.Common.Enums;
 using ArmA3Manager.Application.Common.Interfaces;
 using ArmA3Manager.Application.Common.Models;
@@ -22,12 +24,14 @@ public class ServerManager : IServerManager
     private readonly string _username;
     private readonly string _password;
     private readonly bool _autoStartServer;
+    private readonly RingBuffer<ServerLogEntry> _serverLogBuffer;
 
     private Task? _serverTask;
     private CancellationTokenSource? _serverCts;
 
     public ServerManager(IOptions<ManagerSettings> managerSettings, IUpdatesQueue<string> updatesQueue)
     {
+        _serverLogBuffer = new RingBuffer<ServerLogEntry>(500);
         _updatesQueue = updatesQueue;
         _steamCmdPath = managerSettings.Value.SteamCmdPath;
         _armaServerPath = managerSettings.Value.ArmaServerPath;
@@ -73,18 +77,42 @@ public class ServerManager : IServerManager
                     switch (ev)
                     {
                         case StandardOutputCommandEvent stdout:
+                            _serverLogBuffer.Add(new ServerLogEntry
+                            {
+                                Message = stdout.Text,
+                                Severity = ServerLogSeverity.Info,
+                                Timestamp = DateTime.UtcNow,
+                            });
                             Console.WriteLine($"[Server] {stdout.Text}");
                             break;
 
                         case StandardErrorCommandEvent stderr:
+                            _serverLogBuffer.Add(new ServerLogEntry
+                            {
+                                Message = stderr.Text,
+                                Severity = ServerLogSeverity.Error,
+                                Timestamp = DateTime.UtcNow,
+                            });
                             Console.Error.WriteLine($"[Server ERROR] {stderr.Text}");
                             break;
 
                         case StartedCommandEvent started:
+                            _serverLogBuffer.Add(new ServerLogEntry
+                            {
+                                Message = "Server started",
+                                Severity = ServerLogSeverity.Info,
+                                Timestamp = DateTime.UtcNow,
+                            });
                             Console.WriteLine($"Server started (PID: {started.ProcessId})");
                             break;
 
                         case ExitedCommandEvent exited:
+                            _serverLogBuffer.Add(new ServerLogEntry
+                            {
+                                Message = "Server Stopped",
+                                Severity = ServerLogSeverity.Info,
+                                Timestamp = DateTime.UtcNow,
+                            });
                             Console.WriteLine($"Server exited with code {exited.ExitCode}");
                             break;
                     }
@@ -180,6 +208,11 @@ public class ServerManager : IServerManager
     public ChannelReader<string>? GetUpdatesReader(Guid updateId)
     {
         return _updatesQueue.GetUpdates(updateId);
+    }
+
+    public IEnumerable<ServerLogEntry> GetServerLogs()
+    {
+        return _serverLogBuffer.Get();
     }
 
     private async Task UpdateInternal(ChannelWriter<string> writer, CancellationToken token)

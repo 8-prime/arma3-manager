@@ -32,4 +32,19 @@ public class ConfigManager : IConfigManager
             await file.WriteAsync(Encoding.UTF8.GetBytes(ConfigConstants.DefaultConfig));
         }
     }
+
+    public async Task<string> GetConfig(CancellationToken ct = default)
+    {
+        return await File.ReadAllTextAsync(_configurationFileName, ct);
+    }
+
+    public Task SetConfig(string config, CancellationToken ct = default)
+    {
+        return File.WriteAllTextAsync(_configurationFileName, config, ct);
+    }
+
+    public Task ResetConfig(CancellationToken ct = default)
+    {
+        return File.WriteAllTextAsync(_configurationFileName, ConfigConstants.DefaultConfig, ct);
+    }
 }

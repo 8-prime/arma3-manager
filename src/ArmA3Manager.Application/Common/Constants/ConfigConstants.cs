@@ -63,8 +63,8 @@ public class ConfigConstants
                                         logFile			= "server_console.log";	// Server console output filename
                                         
                                         // SECURITY
-                                        BattlEye				= 1;	// If set to 1, BattlEye Anti-Cheat will be enabled on the server (default: 1, recommended: 1)
-                                        verifySignatures		= 2;	// If set to 2, players with unknown or unsigned mods won't be allowed join (default: 0, recommended: 2)
+                                        BattlEye				= 0;	// If set to 1, BattlEye Anti-Cheat will be enabled on the server (default: 1, recommended: 1)
+                                        verifySignatures		= 0;	// If set to 2, players with unknown or unsigned mods won't be allowed join (default: 0, recommended: 2)
                                         kickDuplicate			= 1;	// If set to 1, players with an ID that is identical to another player will be kicked (recommended: 1)
                                         allowedFilePatching		= 1;	// Prevents clients with filePatching enabled from joining the server
                                         								// (0 = block filePatching, 1 = allow headless clients, 2 = allow all) (default: 0, recommended: 1)
