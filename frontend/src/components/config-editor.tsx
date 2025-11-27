@@ -1,10 +1,8 @@
-"use client"
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Save, RotateCcw } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { getConfig, resetConfig, setConfig } from "@/api/config"
 
 
@@ -21,6 +19,21 @@ export function ConfigEditor() {
         await resetConfig();
         setRawConfig((await getConfig()).configurationString);
     }
+
+    useEffect(() => {
+        let isMounted = true;
+
+        async function fetchInfo() {
+            const data = await getConfig();
+            if (isMounted) setRawConfig(data.configurationString);
+        }
+        fetchInfo();
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
+
 
     return (
         <div className="w-full">

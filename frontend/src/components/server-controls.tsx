@@ -1,8 +1,6 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Play, Square, Download, X } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
 import { useState } from "react"
 import { cancelUpdate, createUpdate, startServer, stopServer, subscribeUpdateStream } from "@/api/server-management"
 import { UpdateLog } from "./update-log"
@@ -45,28 +43,28 @@ export function ServerControls() {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <div className="grid gap-4 md:grid-cols-4">
+                    <div className="gap-4 flex flex-row justify-evenly">
                         <Button
                             size="lg"
-                            className="bg-primary text-primary-foreground hover:bg-primary/90"
+                            className="grow bg-primary text-primary-foreground hover:bg-primary/90"
                             onClick={handleServerStart}
                         >
                             <Play className="mr-2 h-4 w-4" />
                             Start Server
                         </Button>
 
-                        <Button size="lg" variant="destructive" onClick={handleServerStop}>
+                        <Button className="grow" size="lg" variant="destructive" onClick={handleServerStop}>
                             <Square className="mr-2 h-4 w-4" />
                             Stop Server
                         </Button>
 
                         {isUpdating ? (
-                            <Button size="lg" variant="destructive" onClick={handleCancelUpdate}>
+                            <Button className="grow" size="lg" variant="destructive" onClick={handleCancelUpdate}>
                                 <X className="mr-2 h-4 w-4" />
                                 Cancel Update
                             </Button>
                         ) : (
-                            <Button size="lg" variant="outline" onClick={handleUpdate}>
+                            <Button className="grow" size="lg" variant="outline" onClick={handleUpdate}>
                                 <Download className="mr-2 h-4 w-4" />
                                 Update Server
                             </Button>
