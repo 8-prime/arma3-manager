@@ -19,9 +19,14 @@ obj/
 *.swp
 *.DS_Store
 
+
+# Node js
+*Dockerfile*
+*docker-compose*
+**/node_modules
+
 # Ignore local development secrets
 appsettings.Development.json
 .env
 
-frontend/
 data/
