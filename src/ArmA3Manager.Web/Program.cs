@@ -24,6 +24,7 @@ var app = builder.Build();
 
 app.MapOpenApi();
 app.MapStaticAssets();
+app.UseDefaultFiles();
 
 if (app.Environment.IsDevelopment())
 {
@@ -37,4 +38,4 @@ app
     .MapModEndpoints();
 app.MapGet("/healthz", () => "up");
 
-app.Run();
+await app.RunAsync();
