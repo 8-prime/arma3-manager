@@ -98,6 +98,7 @@ RUN mkdir -p /arma3/server && \
     mkdir -p /arma3/config
 
 ENV ServerDir=/arma3/server
+ENV ConfigDir=/arma3/config
 
 # Set working directory to .NET app
 WORKDIR /app
