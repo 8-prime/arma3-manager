@@ -4,9 +4,14 @@ import { Play, Square, Download, X } from "lucide-react"
 import { useState } from "react"
 import { cancelUpdate, createUpdate, startServer, stopServer, subscribeUpdateStream } from "@/api/server-management"
 import { UpdateLog } from "./update-log"
-import type { ServerLogEntryDTO } from "@/api/types"
+import type { ServerInfoDTO, ServerLogEntryDTO } from "@/api/types"
 
-export function ServerControls() {
+export type ServerControlsProps = {
+    serverInfo: ServerInfoDTO | undefined,
+    reloadInfo: () => void
+}
+
+export function ServerControls({ serverInfo, reloadInfo }: Readonly<ServerControlsProps>) {
 
     const [isUpdating, setIsUpdating] = useState(false)
     const [updateLogs, setUpdateLogs] = useState<ServerLogEntryDTO[]>([])
@@ -25,10 +30,12 @@ export function ServerControls() {
 
     const handleServerStart = async () => {
         await startServer();
+        reloadInfo();
     }
 
     const handleServerStop = async () => {
         await stopServer();
+        reloadInfo();
     }
 
     return (
@@ -46,6 +53,7 @@ export function ServerControls() {
                     <div className="gap-4 flex flex-row justify-evenly">
                         <Button
                             size="lg"
+                            disabled={serverInfo?.status == "Running"}
                             className="grow bg-primary text-primary-foreground hover:bg-primary/90"
                             onClick={handleServerStart}
                         >
@@ -53,7 +61,9 @@ export function ServerControls() {
                             Start Server
                         </Button>
 
-                        <Button className="grow" size="lg" variant="destructive" onClick={handleServerStop}>
+                        <Button className="grow" size="lg" variant="destructive"
+                            disabled={serverInfo?.status !== "Running"}
+                            onClick={handleServerStop}>
                             <Square className="mr-2 h-4 w-4" />
                             Stop Server
                         </Button>

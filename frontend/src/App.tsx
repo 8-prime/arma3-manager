@@ -11,6 +11,10 @@ import { ServerLogs } from "./components/server-logs"
 function App() {
   const [serverInfo, setServerInfo] = useState<ServerInfoDTO | undefined>();
 
+  const updateServerInfo = async () => {
+    const data = await getServerInfo();
+    setServerInfo(data);
+  }
 
   useEffect(() => {
     let isMounted = true;
@@ -60,7 +64,7 @@ function App() {
 
         <main className="container mx-auto px-4 py-6">
           <div className="space-y-6">
-            <ServerControls />
+            <ServerControls reloadInfo={updateServerInfo} serverInfo={serverInfo} />
 
             <Tabs defaultValue="config" className="w-full">
               <TabsList className="grid w-full grid-cols-3 lg:w-auto">
