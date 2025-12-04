@@ -2,7 +2,7 @@
 
 namespace ArmA3Manager.Application.Services;
 
-public static class WorkshopHelper
+public static partial class WorkshopHelper
 {
     /// <summary>
     /// Extracts the numeric Steam Workshop ID from a URL.
@@ -16,10 +16,13 @@ public static class WorkshopHelper
             throw new ArgumentException("Workshop URL cannot be empty.");
 
         // Match last sequence of digits in URL
-        var match = Regex.Match(workshopUrl, @"(\d+)(?:\/)?$");
+        var match = DigitsRegex().Match(workshopUrl);
 
         return !match.Success
             ? null
             : match.Groups[1].Value;
     }
+
+    [GeneratedRegex(@"(\d+)(?:\/)?$")]
+    private static partial Regex DigitsRegex();
 }

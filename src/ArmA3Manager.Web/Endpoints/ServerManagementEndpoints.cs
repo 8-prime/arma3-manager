@@ -2,8 +2,6 @@
 using ArmA3Manager.Application.Common.Enums;
 using ArmA3Manager.Application.Common.Extensions;
 using ArmA3Manager.Application.Common.Interfaces;
-using ArmA3Manager.Application.Common.Models.Server;
-using ArmA3Manager.Web.Common.DTOs;
 using ArmA3Manager.Web.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;

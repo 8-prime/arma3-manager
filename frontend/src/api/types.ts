@@ -26,3 +26,15 @@ export type ServerLogEntryDTO = {
     severity: ServerLogSeverity;
     message: string;
 }
+
+export type LoadMissionRequest = {
+    missionLink: string
+}
+
+export type ConfigurationBundleDto = {
+    id: string,
+    isDefault: boolean,
+    name: string,
+    serverConfig: string,
+    launchParameters: string
+}

@@ -22,6 +22,7 @@ public class ServerManager : IServerManager
     private readonly string _serverDir;
     private readonly string _username;
     private readonly string _password;
+    private readonly string _configFilePath;
     private readonly bool _autoStartServer;
     private readonly RingBuffer<ServerLogEntry> _serverLogBuffer;
     private ServerStatus _serverStatus = ServerStatus.NotInitialized;
@@ -34,11 +35,12 @@ public class ServerManager : IServerManager
     {
         _serverLogBuffer = new RingBuffer<ServerLogEntry>(500);
         _updatesQueue = updatesQueue;
-        _steamCmdPath = managerSettings.Value.SteamCmdPath;
-        _armaServerPath = managerSettings.Value.ArmaServerPath;
-        _serverDir = managerSettings.Value.ServerDir;
+        _steamCmdPath = ManagerSettings.SteamCmdPath;
+        _armaServerPath = ManagerSettings.ArmaServerPath;
+        _serverDir = ManagerSettings.ServerDir;
         _username = managerSettings.Value.SteamUsername;
         _password = managerSettings.Value.SteamPassword;
+        _configFilePath = ManagerSettings.ConfigPath;
         _autoStartServer = managerSettings.Value.AutoStartServer;
     }
 
@@ -63,7 +65,7 @@ public class ServerManager : IServerManager
         _serverCts = new CancellationTokenSource();
 
         var cmd = Cli.Wrap(_armaServerPath)
-            .WithArguments("-config=server.cfg")
+            .WithArguments($"-config={_configFilePath}")
             .WithWorkingDirectory(_serverDir);
 
         _serverTask = Task.Run(async () =>

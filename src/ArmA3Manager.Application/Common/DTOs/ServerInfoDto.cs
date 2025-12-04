@@ -1,6 +1,6 @@
 ﻿using ArmA3Manager.Application.Common.Enums;
 
-namespace ArmA3Manager.Web.Common.DTOs;
+namespace ArmA3Manager.Application.Common.DTOs;
 
 public class ServerInfoDto
 {

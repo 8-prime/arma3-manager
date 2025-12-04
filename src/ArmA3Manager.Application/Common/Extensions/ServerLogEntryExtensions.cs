@@ -1,6 +1,5 @@
 ﻿using ArmA3Manager.Application.Common.DTOs;
 using ArmA3Manager.Application.Common.Models.Server;
-using ArmA3Manager.Web.Common.DTOs;
 
 namespace ArmA3Manager.Application.Common.Extensions;
 
