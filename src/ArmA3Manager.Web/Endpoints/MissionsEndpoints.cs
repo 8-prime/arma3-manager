@@ -1,7 +1,6 @@
 ﻿using ArmA3Manager.Application.Common.DTOs;
 using ArmA3Manager.Application.Common.Extensions;
 using ArmA3Manager.Application.Common.Interfaces;
-using ArmA3Manager.Application.Common.Models;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 

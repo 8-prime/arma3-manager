@@ -1,5 +1,7 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using System.Threading.Channels;
+using ArmA3Manager.Application.Common.Builder;
 using ArmA3Manager.Application.Common.Constants;
 using ArmA3Manager.Application.Common.DataTypes;
 using ArmA3Manager.Application.Common.Enums;
@@ -24,6 +26,7 @@ public class ServerManager : IServerManager
     private readonly string _password;
     private readonly string _configFilePath;
     private readonly bool _autoStartServer;
+    private readonly ManagerSettings _settings;
     private readonly RingBuffer<ServerLogEntry> _serverLogBuffer;
     private ServerStatus _serverStatus = ServerStatus.NotInitialized;
     private DateTime? _runningSince;
@@ -35,6 +38,7 @@ public class ServerManager : IServerManager
     {
         _serverLogBuffer = new RingBuffer<ServerLogEntry>(500);
         _updatesQueue = updatesQueue;
+        _settings = managerSettings.Value;
         _steamCmdPath = ManagerSettings.SteamCmdPath;
         _armaServerPath = ManagerSettings.ArmaServerPath;
         _serverDir = ManagerSettings.ServerDir;
@@ -229,12 +233,15 @@ public class ServerManager : IServerManager
     private async Task UpdateInternal(ChannelWriter<ServerLogEntry> writer, CancellationToken token)
     {
         _serverStatus = ServerStatus.Updating;
-        var credentials = string.IsNullOrEmpty(_username) || string.IsNullOrEmpty(_password)
-            ? "anonymous"
-            : $"{_username} {_password}";
+
+        var steamCmdString = new SteamCmdBuilder()
+            .WithCredentials(_settings)
+            .WithInstallDirectory(_serverDir)
+            .WithAppUpdate(ArmA3Constants.ArmA3ServerId)
+            .WithQuit()
+            .Build();
         var cmd = Cli.Wrap(_steamCmdPath)
-            .WithArguments(
-                $"+force_install_dir \"{_serverDir}\" +login {credentials} +app_update {ArmA3Constants.ArmA3ServerId} validate +quit")
+            .WithArguments(steamCmdString)
             .WithValidation(CommandResultValidation.ZeroExitCode);
 
         await foreach (var ev in cmd.ListenAsync(token))
