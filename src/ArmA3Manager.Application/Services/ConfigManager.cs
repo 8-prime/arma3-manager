@@ -23,6 +23,8 @@ public class ConfigManager : IConfigManager
         _configInfoFileName = ManagerSettings.ConfigInfoPath;
     }
 
+    public string Name => "ConfigManager";
+
     public async Task Initialize()
     {
         if (!Directory.Exists(_configurationDirectory))

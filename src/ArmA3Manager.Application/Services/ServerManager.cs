@@ -279,6 +279,8 @@ public class ServerManager : IServerManager
         }
     }
 
+    public string Name => "ServerManager";
+
     public async Task Initialize()
     {
         var op = Update();

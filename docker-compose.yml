@@ -15,7 +15,7 @@ services:
       # BE file transfer port
       - "2345:2345/udp"
       # Manager port
-      - 5000:5000
+      - 5000:80
     volumes:
       - ./data/server:/arma3/server
       - ./data/missions:/arma3/MPMissions
@@ -24,5 +24,3 @@ services:
     environment:
       - SteamUsername=${SteamUsername}
       - SteamPassword=${SteamPassword}
-      - ServerDir=${ServerDir}
-      - ConfigDir=${ConfigDir}

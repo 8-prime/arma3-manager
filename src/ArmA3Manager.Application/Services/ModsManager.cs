@@ -14,6 +14,8 @@ public class ModsManager : IModsManager
         _serverDirectory = ManagerSettings.ServerDir;
     }
 
+    public string Name => "ModsManager";
+
     public Task Initialize()
     {
         return Task.CompletedTask;

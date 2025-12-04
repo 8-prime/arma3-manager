@@ -102,6 +102,8 @@ public class MissionManager : IMissionsManager
         throw new NotImplementedException();
     }
 
+    public string Name => "MissionManager";
+
     public Task Initialize()
     {
         return Task.CompletedTask;

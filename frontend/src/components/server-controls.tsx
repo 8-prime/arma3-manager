@@ -53,7 +53,7 @@ export function ServerControls({ serverInfo, reloadInfo }: Readonly<ServerContro
                     <div className="gap-4 flex flex-row justify-evenly">
                         <Button
                             size="lg"
-                            disabled={serverInfo?.status == "Running"}
+                            disabled={serverInfo?.status === "Running" || serverInfo?.status === "NotInitialized" || serverInfo?.status === "Updating"}
                             className="grow bg-primary text-primary-foreground hover:bg-primary/90"
                             onClick={handleServerStart}
                         >
