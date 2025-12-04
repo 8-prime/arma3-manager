@@ -2,5 +2,5 @@
 
 public class LoadMissionRequest
 {
-    public required string MissionLink { get; set; }
+    
 }
