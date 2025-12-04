@@ -1,13 +1,9 @@
-﻿using ArmA3Manager.Application.Common.Models;
+﻿using System.IO.Compression;
+using ArmA3Manager.Application.Common.Models;
 
 namespace ArmA3Manager.Application.Common.Interfaces;
 
 public interface IModsManager : IInitializeable
 {
-    public Task<ModInfo> LoadMod(string modLink);
-    public Task UpdateMods();
-    public Task UpdateMod(string modLink);
-    public Task<IEnumerable<ModInfo>> GetMods();
-    public Task<ModInfo> GetMod(string modLink);
-    public Task DeleteMod(string modLink);
+    public Task UploadMod(Stream modFileStream, CancellationToken ct = default);
 }

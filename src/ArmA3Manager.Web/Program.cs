@@ -15,6 +15,8 @@ builder.Services.AddSingleton<IMissionsManager, MissionManager>();
 builder.Services.AddSingleton<IInitializeable>(sp => sp.GetRequiredService<IMissionsManager>());
 builder.Services.AddSingleton<IConfigManager, ConfigManager>();
 builder.Services.AddSingleton<IInitializeable>(sp => sp.GetRequiredService<IConfigManager>());
+builder.Services.AddSingleton<IModsManager, ModsManager>();
+builder.Services.AddSingleton<IInitializeable>(sp => sp.GetRequiredService<IModsManager>());
 builder.Services.AddSingleton<IUpdatesQueue<string>, UpdatesQueue<string>>();
 builder.Services.AddSingleton<IUpdatesQueue<ServerLogEntry>, UpdatesQueue<ServerLogEntry>>();
 
@@ -35,6 +37,7 @@ app
     .MapConfigEndpoints()
     .MapServerManagementEndpoints()
     .MapMissionEndpoints()
+    .MapModEndpoints()
     .MapModEndpoints();
 app.MapGet("/healthz", () => "up");
 
