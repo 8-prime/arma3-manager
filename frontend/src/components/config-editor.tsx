@@ -169,7 +169,7 @@ export function ConfigEditor() {
                             <Button
                                 variant="destructive"
                                 onClick={() => handleDeleteConfig(selectedConfig.id)}
-                                disabled={configs.length === 1}
+                                disabled={configs.length === 1 || selectedConfig.isDefault}
                             >
                                 <Trash2 className="mr-2 h-4 w-4" />
                                 Delete Configuration
