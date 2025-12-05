@@ -17,7 +17,7 @@ export function ConfigEditor() {
 
     const handleAddConfig = async () => {
         const newConfig: ConfigurationBundleDto = {
-            id: Date.now().toString(),
+            id: crypto.randomUUID(),
             name: "New Configuration",
             isDefault: false,
             launchParameters: "",
