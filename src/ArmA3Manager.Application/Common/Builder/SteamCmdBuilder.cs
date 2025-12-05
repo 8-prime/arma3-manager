@@ -46,7 +46,7 @@ public class SteamCmdBuilder
 
     public SteamCmdBuilder WithInstallDirectory(string installDir)
     {
-        _entries.Add(new CmdEntry($"+force_install_dir \"{installDir}", 0));
+        _entries.Add(new CmdEntry($"+force_install_dir \"{installDir}\"", 0));
         return this;
     }
 
