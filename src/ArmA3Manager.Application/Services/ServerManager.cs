@@ -1,5 +1,4 @@
-﻿using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using System.Threading.Channels;
 using ArmA3Manager.Application.Common.Builder;
 using ArmA3Manager.Application.Common.Constants;
@@ -240,6 +239,7 @@ public class ServerManager : IServerManager
             .WithAppUpdate(ArmA3Constants.ArmA3ServerId)
             .WithQuit()
             .Build();
+        Console.WriteLine($"Updating Server... with cmd {steamCmdString}");
         var cmd = Cli.Wrap(_steamCmdPath)
             .WithArguments(steamCmdString)
             .WithValidation(CommandResultValidation.ZeroExitCode);
@@ -255,7 +255,7 @@ public class ServerManager : IServerManager
                         Severity = ServerLogSeverity.Info,
                         Timestamp = DateTime.UtcNow,
                     }, token);
-                    Console.WriteLine($"[Server] {stdout.Text}");
+                    Console.WriteLine($"[ServerUpdate] {stdout.Text}");
                     break;
 
                 case StandardErrorCommandEvent stderr:
@@ -265,11 +265,12 @@ public class ServerManager : IServerManager
                         Severity = ServerLogSeverity.Error,
                         Timestamp = DateTime.UtcNow,
                     }, token);
-                    Console.Error.WriteLine($"[Server ERROR] {stderr.Text}");
+                    Console.Error.WriteLine($"[ServerUpdate ERROR] {stderr.Text}");
                     break;
             }
         }
 
+        Console.WriteLine("[ServerUpdate] Update complete");
         writer.Complete();
         _serverStatus = ServerStatus.Initialized;
         if (_updateTask != null)
@@ -290,9 +291,9 @@ public class ServerManager : IServerManager
             return;
         }
 
+
         await foreach (var updateOperation in reader)
         {
-            Console.WriteLine(updateOperation);
         }
 
         if (_autoStartServer)
