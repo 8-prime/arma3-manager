@@ -7,6 +7,7 @@ import { Save, Plus, Trash2, CheckCircle2, Play } from "lucide-react"
 import { useEffect, useState } from "react"
 import type { ConfigurationBundleDto } from "@/api/types"
 import { activateConfig, createConfig, deleteConfig, getActiveConfig, getConfigs, updateConfig } from "@/api/config"
+import { v4 as uuidv4 } from 'uuid';
 
 export function ConfigEditor() {
     const [configs, setConfigs] = useState<ConfigurationBundleDto[]>([])
@@ -17,7 +18,7 @@ export function ConfigEditor() {
 
     const handleAddConfig = async () => {
         const newConfig: ConfigurationBundleDto = {
-            id: crypto.randomUUID(),
+            id: uuidv4(),
             name: "New Configuration",
             isDefault: false,
             launchParameters: "",
