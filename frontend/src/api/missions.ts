@@ -1,4 +1,4 @@
-export function uploadMod(
+export function uploadMission(
     file: File,
     onProgress?: (percent: number) => void
 ): Promise<any> {
