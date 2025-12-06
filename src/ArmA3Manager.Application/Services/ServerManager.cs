@@ -13,36 +13,35 @@ using Microsoft.Extensions.Options;
 
 namespace ArmA3Manager.Application.Services;
 
-public class ServerManager : IServerManager
+public partial class ServerManager : IServerManager
 {
-    private static readonly Regex AnsiRegex = new(@"\x1B\[[0-9;]*[A-Za-z]", RegexOptions.Compiled);
+    private static readonly Regex AnsiRegex = GeneratedAnsiRegex();
     private readonly IUpdatesQueue<ServerLogEntry> _updatesQueue;
     private UpdateOperation? _updateTask;
     private readonly string _steamCmdPath;
     private readonly string _armaServerPath;
     private readonly string _serverDir;
-    private readonly string _username;
-    private readonly string _password;
     private readonly string _configFilePath;
     private readonly bool _autoStartServer;
     private readonly ManagerSettings _settings;
     private readonly RingBuffer<ServerLogEntry> _serverLogBuffer;
+    private readonly IConfigManager _configManager;
     private ServerStatus _serverStatus = ServerStatus.NotInitialized;
     private DateTime? _runningSince;
 
     private Task? _serverTask;
     private CancellationTokenSource? _serverCts;
 
-    public ServerManager(IOptions<ManagerSettings> managerSettings, IUpdatesQueue<ServerLogEntry> updatesQueue)
+    public ServerManager(IOptions<ManagerSettings> managerSettings, IUpdatesQueue<ServerLogEntry> updatesQueue,
+        IConfigManager configManager)
     {
         _serverLogBuffer = new RingBuffer<ServerLogEntry>(500);
         _updatesQueue = updatesQueue;
+        _configManager = configManager;
         _settings = managerSettings.Value;
         _steamCmdPath = ManagerSettings.SteamCmdPath;
         _armaServerPath = ManagerSettings.ArmaServerPath;
         _serverDir = ManagerSettings.ServerDir;
-        _username = managerSettings.Value.SteamUsername;
-        _password = managerSettings.Value.SteamPassword;
         _configFilePath = ManagerSettings.ConfigPath;
         _autoStartServer = managerSettings.Value.AutoStartServer;
     }
@@ -68,7 +67,8 @@ public class ServerManager : IServerManager
         _serverCts = new CancellationTokenSource();
 
         var cmd = Cli.Wrap(_armaServerPath)
-            .WithArguments($"-config={_configFilePath}")
+            .WithArguments(
+                string.Join(' ', $"-config={_configFilePath}", _configManager.ActiveConfig?.LaunchParameters))
             .WithWorkingDirectory(_serverDir);
 
         _serverTask = Task.Run(async () =>
@@ -119,6 +119,7 @@ public class ServerManager : IServerManager
                                 Timestamp = DateTime.UtcNow,
                             });
                             Console.WriteLine($"Server exited with code {exited.ExitCode}");
+                            _runningSince = null;
                             _serverStatus = ServerStatus.Stopped;
                             break;
                     }
@@ -130,6 +131,8 @@ public class ServerManager : IServerManager
             }
             catch (Exception ex)
             {
+                _serverStatus = ServerStatus.Stopped;
+                _runningSince = null;
                 Console.Error.WriteLine($"Server crashed: {ex.Message}");
             }
         });
@@ -301,4 +304,7 @@ public class ServerManager : IServerManager
             StartServer();
         }
     }
+
+    [GeneratedRegex(@"\x1B\[[0-9;]*[A-Za-z]", RegexOptions.Compiled)]
+    private static partial Regex GeneratedAnsiRegex();
 }

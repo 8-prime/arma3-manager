@@ -4,6 +4,7 @@ namespace ArmA3Manager.Application.Common.Interfaces;
 
 public interface IConfigManager : IInitializeable
 {
+    public ConfigurationBundle? ActiveConfig { get; }
     public Task CreateConfig(ConfigurationBundle bundle, CancellationToken ct = default);
     public Task UpdateConfig(ConfigurationBundle bundle, CancellationToken ct = default);
     public Task DeleteConfig(Guid id, CancellationToken ct = default);
