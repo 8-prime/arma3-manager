@@ -7,6 +7,8 @@ import type { ServerInfoDTO } from "./api/types"
 import { getServerInfo } from "./api/server-management"
 import { ThemeProvider } from "./components/theme-provider"
 import { ServerLogs } from "./components/server-logs"
+import { ModManager } from "./components/mod-manager"
+import { MissionManager } from "./components/mission-manager"
 
 function App() {
   const [serverInfo, setServerInfo] = useState<ServerInfoDTO | undefined>();
@@ -68,25 +70,22 @@ function App() {
 
             <Tabs defaultValue="config" className="w-full">
               <TabsList className="grid w-full grid-cols-3 lg:w-auto">
-                {/* <TabsTrigger value="missions">Missions</TabsTrigger>
-              <TabsTrigger value="players">Players</TabsTrigger> */}
                 <TabsTrigger value="config">Configuration</TabsTrigger>
                 <TabsTrigger value="server-logs">Server Logs</TabsTrigger>
+                <TabsTrigger value="mods">Mods</TabsTrigger>
+                <TabsTrigger value="missions">Missions</TabsTrigger>
               </TabsList>
-
-              {/* <TabsContent value="missions" className="mt-6">
-              <MissionManager />
-            </TabsContent>
-
-            <TabsContent value="players" className="mt-6">
-              <PlayerMonitor />
-            </TabsContent> */}
-
               <TabsContent value="config" className="mt-6">
                 <ConfigEditor />
               </TabsContent>
               <TabsContent value="server-logs" className="mt-6">
                 <ServerLogs />
+              </TabsContent>
+              <TabsContent value="mods" className="mt-6">
+                <ModManager />
+              </TabsContent>
+              <TabsContent value="missions" className="mt-6">
+                <MissionManager />
               </TabsContent>
             </Tabs>
           </div>
