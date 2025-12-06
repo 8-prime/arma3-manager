@@ -1,4 +1,5 @@
 ﻿using System.IO.Compression;
+using ArmA3Manager.Application.Common.Extensions;
 using ArmA3Manager.Application.Common.Interfaces;
 using ArmA3Manager.Application.Common.Models;
 using Microsoft.Extensions.Options;
@@ -25,7 +26,7 @@ public class ModsManager : IModsManager
     {
         await using var archive = new ZipArchive(modFileStream, ZipArchiveMode.Read, false);
         var dirPrefix = archive.Entries
-            .Select(e => GetTopLevelDirectory(e.FullName))
+            .Select(e => e.GetTopLevelDirectory())
             .FirstOrDefault(x => x is not null);
 
         if (dirPrefix is null)
@@ -59,15 +60,5 @@ public class ModsManager : IModsManager
                 await stream.CopyToAsync(File.Create(destination), ct);
             }
         }
-    }
-
-
-    private static string? GetTopLevelDirectory(string path)
-    {
-        if (string.IsNullOrWhiteSpace(path) || !path.Contains('/'))
-            return null;
-
-        var idx = path.IndexOf('/');
-        return idx > 0 ? path[..(idx + 1)] : null;
     }
 }
