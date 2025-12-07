@@ -4,16 +4,6 @@ import { CheckCircle2, Circle, Loader2, XCircle } from "lucide-react"
 import type { InitializationResource, InitializationStatus } from "@/api/types"
 import { getInitializationStatus } from "@/api/initialization"
 
-
-const mockInitializationSequence = [
-    { name: "Database Connection", delays: [0, 500, 1500] },
-    { name: "SteamCMD Integration", delays: [0, 800, 2000] },
-    { name: "Server Files", delays: [0, 1200, 2800] },
-    { name: "Workshop Sync", delays: [0, 1500, 3500] },
-    { name: "Configuration Loader", delays: [0, 600, 2200] },
-    { name: "Mission Directory", delays: [0, 900, 2500] },
-]
-
 export type InitializationScreenProps = {
     onComplete: () => void
 }
