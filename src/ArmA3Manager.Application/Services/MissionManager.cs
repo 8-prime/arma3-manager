@@ -14,19 +14,19 @@ public class MissionManager : IMissionsManager
     public MissionManager(IOptions<ManagerSettings> managerSettings)
     {
         _mpMissionsDir = managerSettings.Value.MissionsDir;
-        Directory.CreateDirectory(_mpMissionsDir);
     }
 
     public string Name => "MissionManager";
 
     public Task Initialize()
     {
+        Directory.CreateDirectory(_mpMissionsDir);
         return Task.CompletedTask;
     }
 
     public async Task UploadMission(Stream missionFileStream, CancellationToken ct = default)
     {
         await using var archive = new ZipArchive(missionFileStream, ZipArchiveMode.Read, false);
-        await archive.ExtractToDirectoryAsync(_mpMissionsDir, ct);
+        await archive.ExtractToDirectoryAsync(_mpMissionsDir, true, ct);
     }
 }

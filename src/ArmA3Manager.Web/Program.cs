@@ -4,9 +4,17 @@ using ArmA3Manager.Application.Common.Models.Server;
 using ArmA3Manager.Application.Services;
 using ArmA3Manager.Web.Endpoints;
 using ArmA3Manager.Web.Extensions;
+using Microsoft.AspNetCore.Http.Features;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Allow large file uploads for mods
+builder.WebHost.ConfigureKestrel(options => { options.Limits.MaxRequestBodySize = int.MaxValue; });
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = long.MaxValue;
+});
 
 builder.Services.Configure<ManagerSettings>(builder.Configuration);
 builder.Services.AddHostedService<InitializationManager>();

@@ -25,6 +25,6 @@ public class ModsManager : IModsManager
     public async Task UploadMod(Stream modFileStream, CancellationToken ct = default)
     {
         await using var archive = new ZipArchive(modFileStream, ZipArchiveMode.Read, false);
-        await archive.ExtractToDirectoryAsync(_serverDirectory, ct);
+        await archive.ExtractToDirectoryAsync(_serverDirectory, true, ct);
     }
 }
