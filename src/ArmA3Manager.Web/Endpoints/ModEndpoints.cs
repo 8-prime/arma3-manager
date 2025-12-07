@@ -10,7 +10,7 @@ public static class ModEndpoints
 {
     public static WebApplication MapModEndpoints(this WebApplication app)
     {
-        var group = app.MapGroup("api/mods");
+        var group = app.MapGroup("api/mods").RequireInitialization();
         group.MapPost("", HandleModUpload);
         return app;
     }

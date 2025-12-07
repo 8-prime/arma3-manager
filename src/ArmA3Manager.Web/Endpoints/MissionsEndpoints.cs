@@ -9,7 +9,7 @@ public static class MissionsEndpoints
 {
     public static WebApplication MapMissionEndpoints(this WebApplication app)
     {
-        var group = app.MapGroup("api/missions");
+        var group = app.MapGroup("api/missions").RequireInitialization();
         group.MapPost("", HandleMissionUpload);
         return app;
     }

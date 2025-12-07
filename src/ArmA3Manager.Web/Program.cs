@@ -5,6 +5,8 @@ using ArmA3Manager.Application.Common.Models;
 using ArmA3Manager.Application.Common.Models.Server;
 using ArmA3Manager.Application.Services;
 using ArmA3Manager.Web.Endpoints;
+using ArmA3Manager.Web.Extensions;
+using ArmA3Manager.Web.Models;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -30,32 +32,19 @@ var app = builder.Build();
 app.MapOpenApi();
 app.UseDefaultFiles();
 app.MapStaticAssets();
+app.UseInitialization();
 
 if (app.Environment.IsDevelopment())
 {
     app.MapScalarApiReference();
 }
 
-app.Use(async (context, next) =>
-{
-    var initManager = context.RequestServices.GetRequiredService<IInitializationInfo>();
-    if (!initManager.FinishedInitialization)
-    {
-        context.Response.StatusCode = (int)HttpStatusCode.ServiceUnavailable;
-        context.Response.ContentType = "application/json";
-
-        await context.Response.WriteAsync(JsonSerializer.Serialize(initManager.InitializationResources));
-        return;
-    }
-
-    await next.Invoke(context);
-});
 
 app
+    .MapInitializationEndpoints()
     .MapConfigEndpoints()
     .MapServerManagementEndpoints()
     .MapMissionEndpoints()
-    .MapModEndpoints()
     .MapModEndpoints();
 app.MapGet("/healthz", () => "up");
 

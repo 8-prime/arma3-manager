@@ -38,3 +38,15 @@ export type ConfigurationBundleDto = {
     serverConfig: string,
     launchParameters: string
 }
+
+
+export type InitializationStatus =
+    | "Created"
+    | "Started"
+    | "Finished"
+    | "Failed"
+
+export type InitializationResource = {
+    name: string
+    status: InitializationStatus
+}

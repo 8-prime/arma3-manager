@@ -12,7 +12,7 @@ public static class ServerManagementEndpoints
 {
     public static WebApplication MapServerManagementEndpoints(this WebApplication app)
     {
-        var group = app.MapGroup("api/management");
+        var group = app.MapGroup("api/management").RequireInitialization();
         group.MapGet("", GetServerInfoAsync);
         group.MapGet("updates/{id:Guid}", GetUpdateProgress);
         group.MapGet("logs", GetServerLogs);

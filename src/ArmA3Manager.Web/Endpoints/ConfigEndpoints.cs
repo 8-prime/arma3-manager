@@ -1,6 +1,7 @@
 ﻿using ArmA3Manager.Application.Common.DTOs;
 using ArmA3Manager.Application.Common.Extensions;
 using ArmA3Manager.Application.Common.Interfaces;
+using ArmA3Manager.Web.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,8 +11,7 @@ public static class ConfigEndpoints
 {
     public static WebApplication MapConfigEndpoints(this WebApplication app)
     {
-        var group = app.MapGroup("api/config");
-
+        var group = app.MapGroup("api/config").RequireInitialization();
         group.MapGet("", GetConfigs);
         group.MapGet("active", GetActiveConfig);
         group.MapPost("", CreateConfig);
