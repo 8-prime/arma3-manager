@@ -25,6 +25,7 @@ builder.Services.AddSingleton<IUpdatesQueue<string>, UpdatesQueue<string>>();
 builder.Services.AddSingleton<IUpdatesQueue<ServerLogEntry>, UpdatesQueue<ServerLogEntry>>();
 builder.Services.AddSingleton<IInitializationInfo, InitializationInfo>();
 
+builder.Services.AddAntiforgery();
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
