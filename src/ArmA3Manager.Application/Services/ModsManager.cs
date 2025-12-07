@@ -12,7 +12,7 @@ public class ModsManager : IModsManager
 
     public ModsManager(IOptions<ManagerSettings> options)
     {
-        _serverDirectory = ManagerSettings.ServerDir;
+        _serverDirectory = options.Value.ServerDir;
     }
 
     public string Name => "ModsManager";
@@ -25,40 +25,6 @@ public class ModsManager : IModsManager
     public async Task UploadMod(Stream modFileStream, CancellationToken ct = default)
     {
         await using var archive = new ZipArchive(modFileStream, ZipArchiveMode.Read, false);
-        var dirPrefix = archive.Entries
-            .Select(e => e.GetTopLevelDirectory())
-            .FirstOrDefault(x => x is not null);
-
-        if (dirPrefix is null)
-            return;
-
-        if (!Directory.Exists(_serverDirectory))
-        {
-            Directory.CreateDirectory(_serverDirectory);
-        }
-
-        foreach (var entry in archive.Entries)
-        {
-            if (!entry.FullName.StartsWith(dirPrefix))
-                continue;
-
-            var relativePath = entry.FullName[dirPrefix.Length..].TrimStart('/', '\\');
-
-            if (string.IsNullOrEmpty(relativePath))
-                continue;
-
-            var destination = Path.Combine(_serverDirectory, relativePath);
-
-            if (entry.FullName.EndsWith('/'))
-            {
-                Directory.CreateDirectory(destination);
-            }
-            else
-            {
-                Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
-                var stream = await entry.OpenAsync(ct);
-                await stream.CopyToAsync(File.Create(destination), ct);
-            }
-        }
+        await archive.ExtractToDirectoryAsync(_serverDirectory, ct);
     }
 }

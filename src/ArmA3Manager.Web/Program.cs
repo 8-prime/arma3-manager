@@ -1,12 +1,9 @@
-using System.Net;
-using System.Text.Json;
 using ArmA3Manager.Application.Common.Interfaces;
 using ArmA3Manager.Application.Common.Models;
 using ArmA3Manager.Application.Common.Models.Server;
 using ArmA3Manager.Application.Services;
 using ArmA3Manager.Web.Endpoints;
 using ArmA3Manager.Web.Extensions;
-using ArmA3Manager.Web.Models;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,7 +22,6 @@ builder.Services.AddSingleton<IUpdatesQueue<string>, UpdatesQueue<string>>();
 builder.Services.AddSingleton<IUpdatesQueue<ServerLogEntry>, UpdatesQueue<ServerLogEntry>>();
 builder.Services.AddSingleton<IInitializationInfo, InitializationInfo>();
 
-builder.Services.AddAntiforgery();
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
@@ -33,14 +29,12 @@ var app = builder.Build();
 app.MapOpenApi();
 app.UseDefaultFiles();
 app.MapStaticAssets();
-app.UseAntiforgery();
 app.UseInitialization();
 
 if (app.Environment.IsDevelopment())
 {
     app.MapScalarApiReference();
 }
-
 
 app
     .MapInitializationEndpoints()

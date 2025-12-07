@@ -10,7 +10,7 @@ public static class ModEndpoints
 {
     public static WebApplication MapModEndpoints(this WebApplication app)
     {
-        var group = app.MapGroup("api/mods").RequireInitialization();
+        var group = app.MapGroup("api/mods").RequireInitialization().DisableAntiforgery();
         group.MapPost("", HandleModUpload);
         return app;
     }
@@ -19,7 +19,10 @@ public static class ModEndpoints
         [FromServices] IModsManager manager, CancellationToken ct)
     {
         if (!file.IsZipArchive())
+        {
+            Console.WriteLine("Request did not contain valid zip archive");
             return TypedResults.BadRequest("Uploaded file is not a valid ZIP archive");
+        }
 
         await manager.UploadMod(file.OpenReadStream(), ct);
         return TypedResults.Ok();

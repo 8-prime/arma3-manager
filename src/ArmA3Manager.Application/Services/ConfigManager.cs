@@ -17,9 +17,9 @@ public class ConfigManager : IConfigManager
 
     public ConfigManager(IOptions<ManagerSettings> settings)
     {
-        _configurationDirectory = ManagerSettings.ConfigurationsDir;
-        _configurationFileName = ManagerSettings.ConfigPath;
-        _configInfoFileName = ManagerSettings.ConfigInfoPath;
+        _configurationDirectory = settings.Value.ConfigurationsDir;
+        _configurationFileName = settings.Value.ConfigPath;
+        _configInfoFileName = settings.Value.ConfigInfoPath;
     }
 
     public string Name => "ConfigManager";

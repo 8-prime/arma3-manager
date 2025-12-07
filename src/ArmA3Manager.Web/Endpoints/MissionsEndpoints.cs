@@ -9,7 +9,7 @@ public static class MissionsEndpoints
 {
     public static WebApplication MapMissionEndpoints(this WebApplication app)
     {
-        var group = app.MapGroup("api/missions").RequireInitialization();
+        var group = app.MapGroup("api/missions").RequireInitialization().DisableAntiforgery();
         group.MapPost("", HandleMissionUpload);
         return app;
     }

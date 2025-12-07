@@ -39,10 +39,10 @@ public partial class ServerManager : IServerManager
         _updatesQueue = updatesQueue;
         _configManager = configManager;
         _settings = managerSettings.Value;
-        _steamCmdPath = ManagerSettings.SteamCmdPath;
-        _armaServerPath = ManagerSettings.ArmaServerPath;
-        _serverDir = ManagerSettings.ServerDir;
-        _configFilePath = ManagerSettings.ConfigPath;
+        _steamCmdPath = managerSettings.Value.SteamCmdPath;
+        _armaServerPath = managerSettings.Value.ArmaServerPath;
+        _serverDir = managerSettings.Value.ServerDir;
+        _configFilePath = managerSettings.Value.ConfigPath;
         _autoStartServer = managerSettings.Value.AutoStartServer;
     }
 
