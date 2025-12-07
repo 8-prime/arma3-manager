@@ -32,6 +32,7 @@ var app = builder.Build();
 app.MapOpenApi();
 app.UseDefaultFiles();
 app.MapStaticAssets();
+app.UseAntiforgery();
 app.UseInitialization();
 
 if (app.Environment.IsDevelopment())

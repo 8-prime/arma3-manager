@@ -66,7 +66,7 @@ export function MainApp() {
                     <ServerControls reloadInfo={updateServerInfo} serverInfo={serverInfo} />
 
                     <Tabs defaultValue="config" className="w-full">
-                        <TabsList className="grid w-full grid-cols-3 lg:w-auto">
+                        <TabsList className="grid w-full grid-cols-4 lg:w-auto">
                             <TabsTrigger value="config">Configuration</TabsTrigger>
                             <TabsTrigger value="server-logs">Server Logs</TabsTrigger>
                             <TabsTrigger value="mods">Mods</TabsTrigger>
