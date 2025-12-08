@@ -13,13 +13,11 @@ public class ConfigManager : IConfigManager
     private readonly string _configurationDirectory;
     private readonly string _configurationFileName;
     private readonly string _configInfoFileName;
-    private readonly IServerManager _serverManager;
     private ConfigInfo? _currentConfigInfo;
 
 
-    public ConfigManager(IOptions<ManagerSettings> settings, IServerManager serverManager)
+    public ConfigManager(IOptions<ManagerSettings> settings)
     {
-        _serverManager = serverManager;
         _configurationDirectory = settings.Value.ConfigurationsDir;
         _configurationFileName = settings.Value.ConfigPath;
         _configInfoFileName = settings.Value.ConfigInfoPath;
@@ -188,7 +186,6 @@ public class ConfigManager : IConfigManager
 
     private async Task WriteConfigToServer(ConfigurationBundle configBundle, CancellationToken ct = default)
     {
-        await _serverManager.StopServer();
         await using var file = File.Create(_configurationFileName);
         await file.WriteAsync(Encoding.UTF8.GetBytes(configBundle.ServerConfig), ct);
         // intentionally don't start server as maybe more settings need to be changed?!
