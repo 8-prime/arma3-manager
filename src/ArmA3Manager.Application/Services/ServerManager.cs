@@ -294,7 +294,6 @@ public partial class ServerManager : IServerManager
             return;
         }
 
-
         await foreach (var updateOperation in reader)
         {
         }

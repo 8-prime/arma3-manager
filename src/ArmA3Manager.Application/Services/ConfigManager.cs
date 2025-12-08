@@ -113,15 +113,16 @@ public class ConfigManager : IConfigManager
     {
         List<ConfigurationBundle> configs = [];
         var skipFileName = Path.GetFileNameWithoutExtension(_configInfoFileName);
-        foreach (var file in Directory.EnumerateFiles(_configurationDirectory, "*.json", SearchOption.AllDirectories))
+        foreach (var filePath in Directory.EnumerateFiles(_configurationDirectory, "*.json", SearchOption.AllDirectories))
         {
-            if (Path.GetFileNameWithoutExtension(file) == skipFileName)
+            if (Path.GetFileNameWithoutExtension(filePath) == skipFileName)
             {
                 continue;
             }
 
+            await using var configFile = File.OpenRead(filePath);
             var configBundle =
-                await JsonSerializer.DeserializeAsync<ConfigurationBundle>(File.OpenRead(file), cancellationToken: ct);
+                await JsonSerializer.DeserializeAsync<ConfigurationBundle>(configFile, cancellationToken: ct);
             if (configBundle is null)
             {
                 continue;

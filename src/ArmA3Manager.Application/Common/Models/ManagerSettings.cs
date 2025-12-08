@@ -8,7 +8,7 @@ public class ManagerSettings
     public required string SteamUsername { get; set; }
     public required string SteamPassword { get; set; }
     public string ConfigPath => Path.Join(ServerDir, "server.cfg");
-    public string ConfigInfoPath => Path.Join(ServerDir, "configs.json");
+    public string ConfigInfoPath => Path.Join(ConfigurationsDir, "configs.json");
     public required string ConfigurationsDir { get; set; } = "/arma3/config";
     public required string MissionsDownloadDir { get; set; }
     public string MissionsDir => Path.Combine(ServerDir, "mpmissions");
