@@ -43,12 +43,29 @@ public class InitializationManager : BackgroundService
             {
                 _initializationInfo.UpdateInitializationResource(initializeable.Name, InitializationStatus.Started);
                 await initializeable.Initialize();
-                _initializationInfo.UpdateInitializationResource(initializeable.Name, InitializationStatus.Finished);
+                _initializationInfo.UpdateInitializationResource(initializeable.Name, InitializationStatus.Initialized);
             }
             catch (Exception ex)
             {
                 _initializationInfo.UpdateInitializationResource(initializeable.Name, InitializationStatus.Failed);
                 await Console.Error.WriteLineAsync(ex.Message);
+            }
+        }
+
+        if (_initializationInfo.Initialized)
+        {
+            foreach (var initializeable in _initializers)
+            {
+                try
+                {
+                    await initializeable.OnInitializationCompleted();
+                    _initializationInfo.UpdateInitializationResource(initializeable.Name, InitializationStatus.Completed);
+                }
+                catch (Exception ex)
+                {
+                    _initializationInfo.UpdateInitializationResource(initializeable.Name, InitializationStatus.Failed);
+                    await Console.Error.WriteLineAsync(ex.Message);
+                }
             }
         }
 

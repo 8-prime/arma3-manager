@@ -24,6 +24,11 @@ public class MissionManager : IMissionsManager
         return Task.CompletedTask;
     }
 
+    public Task OnInitializationCompleted()
+    {
+        return Task.CompletedTask;
+    }
+
     public async Task UploadMission(Stream missionFileStream, CancellationToken ct = default)
     {
         await using var archive = new ZipArchive(missionFileStream, ZipArchiveMode.Read, false);

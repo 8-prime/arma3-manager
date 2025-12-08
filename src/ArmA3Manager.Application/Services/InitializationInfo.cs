@@ -16,7 +16,8 @@ public class InitializationInfo : IInitializationInfo
     }
 
     public List<InitializationResource> InitializationResources => _resources.Values.ToList();
-    public bool FinishedInitialization => _skipInitialization || _resources.Values.All(r => r.Status >= InitializationStatus.Finished);
+    public bool Initialized => _skipInitialization || _resources.Values.All(r => r.Status == InitializationStatus.Initialized);
+    public bool Completed => _skipInitialization || _resources.Values.All(r => r.Status >= InitializationStatus.Completed);
 
     public void SetInitializationResource(string resourceId, InitializationResource resource)
     {

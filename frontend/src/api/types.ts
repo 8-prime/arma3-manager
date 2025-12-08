@@ -43,7 +43,8 @@ export type ConfigurationBundleDto = {
 export type InitializationStatus =
     | "Created"
     | "Started"
-    | "Finished"
+    | "Initialized"
+    | "Completed"
     | "Failed"
 
 export type InitializationResource = {

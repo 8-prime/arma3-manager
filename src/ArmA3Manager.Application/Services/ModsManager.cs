@@ -22,6 +22,11 @@ public class ModsManager : IModsManager
         return Task.CompletedTask;
     }
 
+    public Task OnInitializationCompleted()
+    {
+        return Task.CompletedTask;
+    }
+
     public async Task UploadMod(Stream modFileStream, CancellationToken ct = default)
     {
         await using var archive = new ZipArchive(modFileStream, ZipArchiveMode.Read, false);

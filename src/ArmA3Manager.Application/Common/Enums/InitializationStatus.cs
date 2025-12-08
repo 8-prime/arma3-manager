@@ -7,6 +7,7 @@ public enum InitializationStatus
 {
     Created,
     Started,
-    Finished,
+    Initialized,
+    Completed,
     Failed,
 }

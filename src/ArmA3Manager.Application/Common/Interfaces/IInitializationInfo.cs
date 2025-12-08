@@ -6,7 +6,8 @@ namespace ArmA3Manager.Application.Common.Interfaces;
 public interface IInitializationInfo
 {
     public List<InitializationResource> InitializationResources { get; }
-    public bool FinishedInitialization { get; }
+    public bool Initialized { get; }
+    public bool Completed { get; }
     public void SetInitializationResource(string resourceId, InitializationResource resource);
     public void UpdateInitializationResource(string resourceId, InitializationStatus status);
 }

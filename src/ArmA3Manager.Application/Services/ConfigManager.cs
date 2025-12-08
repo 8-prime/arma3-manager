@@ -13,10 +13,13 @@ public class ConfigManager : IConfigManager
     private readonly string _configurationDirectory;
     private readonly string _configurationFileName;
     private readonly string _configInfoFileName;
+    private readonly IServerManager _serverManager;
     private ConfigInfo? _currentConfigInfo;
 
-    public ConfigManager(IOptions<ManagerSettings> settings)
+
+    public ConfigManager(IOptions<ManagerSettings> settings, IServerManager serverManager)
     {
+        _serverManager = serverManager;
         _configurationDirectory = settings.Value.ConfigurationsDir;
         _configurationFileName = settings.Value.ConfigPath;
         _configInfoFileName = settings.Value.ConfigInfoPath;
@@ -33,23 +36,24 @@ public class ConfigManager : IConfigManager
 
         if (!File.Exists(_configInfoFileName))
         {
-            Console.WriteLine("Creating configuration file");
-            ActiveConfig = new ConfigurationBundle
-            {
-                Id = Guid.NewGuid(),
-                IsDefault = true,
-                LaunchParameters = "",
-                ServerConfig = ConfigConstants.DefaultConfig,
-                Name = "Default",
-            };
-
-            await using var configBundleFile =
-                File.Create(Path.Join(_configurationDirectory, $"{ActiveConfig.Id}.json"));
-            var configBundleJson = JsonSerializer.Serialize(ActiveConfig);
-            await configBundleFile.WriteAsync(Encoding.UTF8.GetBytes(configBundleJson));
-            await WriteConfigInfoForBundle(ActiveConfig);
-            await ActivateConfig(ActiveConfig.Id);
+            await CreateNewDefaultConfig();
         }
+        else
+        {
+            try
+            {
+                await GetActiveConfig();
+            }
+            catch (ConfigurationException)
+            {
+                await CreateNewDefaultConfig();
+            }
+        }
+    }
+
+    public Task OnInitializationCompleted()
+    {
+        return Task.CompletedTask;
     }
 
     public ConfigurationBundle? ActiveConfig { get; private set; }
@@ -113,7 +117,8 @@ public class ConfigManager : IConfigManager
     {
         List<ConfigurationBundle> configs = [];
         var skipFileName = Path.GetFileNameWithoutExtension(_configInfoFileName);
-        foreach (var filePath in Directory.EnumerateFiles(_configurationDirectory, "*.json", SearchOption.AllDirectories))
+        foreach (var filePath in Directory.EnumerateFiles(_configurationDirectory, "*.json",
+                     SearchOption.AllDirectories))
         {
             if (Path.GetFileNameWithoutExtension(filePath) == skipFileName)
             {
@@ -142,10 +147,25 @@ public class ConfigManager : IConfigManager
         }
 
         var activeId = await GetActiveGuid(ct);
-
-        await using var file = File.OpenRead(Path.Join(_configurationDirectory, $"{activeId}.json"));
-        ActiveConfig = await JsonSerializer.DeserializeAsync<ConfigurationBundle>(file, cancellationToken: ct);
+        ActiveConfig = await LoadJson<ConfigurationBundle>(Path.Join(_configurationDirectory, $"{activeId}.json"), ct);
         return ActiveConfig ?? throw new ConfigurationException("No active config found");
+    }
+
+    private async Task CreateNewDefaultConfig(CancellationToken ct = default)
+    {
+        Console.WriteLine("Creating configuration file");
+        ActiveConfig = new ConfigurationBundle
+        {
+            Id = Guid.NewGuid(),
+            IsDefault = true,
+            LaunchParameters = "",
+            ServerConfig = ConfigConstants.DefaultConfig,
+            Name = "Default",
+        };
+
+        await WriteJson(ActiveConfig, Path.Join(_configurationDirectory, $"{ActiveConfig.Id}.json"), ct);
+        await WriteConfigInfoForBundle(ActiveConfig, ct);
+        await ActivateConfig(ActiveConfig.Id, ct);
     }
 
     private async Task<Guid> GetActiveGuid(CancellationToken ct = default)
@@ -155,8 +175,7 @@ public class ConfigManager : IConfigManager
             return _currentConfigInfo.ActiveConfigId;
         }
 
-        await using var file = File.OpenRead(_configInfoFileName);
-        _currentConfigInfo = await JsonSerializer.DeserializeAsync<ConfigInfo>(file, cancellationToken: ct);
+        _currentConfigInfo = await LoadJson<ConfigInfo>(_configInfoFileName, ct);
         return _currentConfigInfo?.ActiveConfigId ??
                throw new ConfigurationException("Configuration is broken. Please reset server");
     }
@@ -164,14 +183,27 @@ public class ConfigManager : IConfigManager
     private async Task WriteConfigInfoForBundle(ConfigurationBundle bundle, CancellationToken ct = default)
     {
         _currentConfigInfo = new ConfigInfo(bundle);
-        await using var file = File.Create(_configInfoFileName);
-        var json = JsonSerializer.Serialize(_currentConfigInfo);
-        await file.WriteAsync(Encoding.UTF8.GetBytes(json), ct);
+        await WriteJson(_currentConfigInfo, _configInfoFileName, ct);
     }
 
     private async Task WriteConfigToServer(ConfigurationBundle configBundle, CancellationToken ct = default)
     {
+        await _serverManager.StopServer();
         await using var file = File.Create(_configurationFileName);
         await file.WriteAsync(Encoding.UTF8.GetBytes(configBundle.ServerConfig), ct);
+        // intentionally don't start server as maybe more settings need to be changed?!
+    }
+
+    private static async Task<T?> LoadJson<T>(string filePath, CancellationToken ct = default)
+    {
+        await using var file = File.OpenRead(filePath);
+        var result = await JsonSerializer.DeserializeAsync<T>(file, cancellationToken: ct);
+        return result;
+    }
+
+    private static async Task WriteJson<T>(T data, string filePath, CancellationToken ct = default)
+    {
+        await using var file = File.Create(filePath);
+        await JsonSerializer.SerializeAsync(file, data, cancellationToken: ct);
     }
 }

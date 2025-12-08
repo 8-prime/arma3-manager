@@ -19,9 +19,8 @@ public static class InitializationMiddlewareExtension
                 return;
             }
 
-
             var initManager = context.RequestServices.GetRequiredService<IInitializationInfo>();
-            if (!initManager.FinishedInitialization)
+            if (!initManager.Completed)
             {
                 context.Response.StatusCode = (int)HttpStatusCode.ServiceUnavailable;
                 context.Response.ContentType = "application/json";

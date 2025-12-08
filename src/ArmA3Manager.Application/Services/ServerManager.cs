@@ -297,11 +297,16 @@ public partial class ServerManager : IServerManager
         await foreach (var updateOperation in reader)
         {
         }
+    }
 
+    public Task OnInitializationCompleted()
+    {
         if (_autoStartServer)
         {
             StartServer();
         }
+
+        return Task.CompletedTask;
     }
 
     [GeneratedRegex(@"\x1B\[[0-9;]*[A-Za-z]", RegexOptions.Compiled)]

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { CheckCircle2, Circle, Loader2, XCircle } from "lucide-react"
+import { CheckCircle2, Circle, ClockCheck, Loader2, XCircle } from "lucide-react"
 import type { InitializationResource, InitializationStatus } from "@/api/types"
 import { getInitializationStatus } from "@/api/initialization"
 
@@ -16,7 +16,7 @@ export function InitializationScreen({ onComplete }: Readonly<InitializationScre
 
         async function fetchInit() {
             const data = await getInitializationStatus();
-            if (data.every(e => e.status == "Finished")) {
+            if (data.every(e => e.status == "Completed")) {
                 setTimeout(onComplete, 500)
             }
             if (isMounted) setResources(data);
@@ -38,7 +38,9 @@ export function InitializationScreen({ onComplete }: Readonly<InitializationScre
                 return <Circle className="h-5 w-5 text-muted-foreground" />
             case "Started":
                 return <Loader2 className="h-5 w-5 animate-spin text-primary" />
-            case "Finished":
+            case "Initialized":
+                return <ClockCheck className="h-5 w-5 text-primary" />
+            case "Completed":
                 return <CheckCircle2 className="h-5 w-5 text-primary" />
             case "Failed":
                 return <XCircle className="h-5 w-5 text-destructive" />
@@ -51,15 +53,15 @@ export function InitializationScreen({ onComplete }: Readonly<InitializationScre
                 return "Pending"
             case "Started":
                 return "Initializing..."
-            case "Finished":
+            case "Completed":
                 return "Ready"
             case "Failed":
                 return "Failed"
         }
     }
 
-    const allFinished = resources.every((r) => r.status === "Finished")
-    const progress = (resources.filter((r) => r.status === "Finished").length / resources.length) * 100
+    const allFinished = resources.every((r) => r.status === "Completed")
+    const progress = (resources.filter((r) => r.status === "Completed").length / resources.length) * 100
 
     return (
         <div className="flex min-h-screen items-center justify-center bg-background">
