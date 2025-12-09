@@ -34,9 +34,9 @@ public static class ServerManagementEndpoints
         return TypedResults.Ok((await manager.GetServerInfo()).Map());
     }
 
-    private static Ok<Guid> UpdateServer([FromServices] IServerManager manager)
+    private static async Task<Ok<Guid>> UpdateServer([FromServices] IServerManager manager)
     {
-        var id = manager.Update();
+        var id = await manager.Update();
         return TypedResults.Ok(id);
     }
 
