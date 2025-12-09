@@ -195,8 +195,14 @@ public partial class ServerManager : IServerManager
     /// <summary>
     /// Update server (same as download for SteamCMD)
     /// </summary>
-    public Guid Update()
+    public async Task<Guid> Update()
     {
+        var wasRunning = _serverStatus == ServerStatus.Running;
+        if (wasRunning)
+        {
+            await StopServer();
+        }
+
         if (_updateTask != null)
         {
             return _updateTask.Id;
@@ -212,7 +218,8 @@ public partial class ServerManager : IServerManager
         });
         var cts = new CancellationTokenSource();
         _updateTask =
-            new UpdateOperation(operationId, Task.Run(() => UpdateInternal(writer, cts.Token), cts.Token), cts);
+            new UpdateOperation(operationId, Task.Run(() => UpdateInternal(writer, wasRunning, cts.Token), cts.Token),
+                cts);
         return operationId;
     }
 
@@ -235,7 +242,7 @@ public partial class ServerManager : IServerManager
         return _serverLogBuffer.Get();
     }
 
-    private async Task UpdateInternal(ChannelWriter<ServerLogEntry> writer, CancellationToken token)
+    private async Task UpdateInternal(ChannelWriter<ServerLogEntry> writer, bool wasRunning, CancellationToken token)
     {
         _serverStatus = ServerStatus.Updating;
 
@@ -283,13 +290,18 @@ public partial class ServerManager : IServerManager
             _updatesQueue.ClearUpdates(_updateTask.Id);
             _updateTask = null;
         }
+
+        if (wasRunning)
+        {
+            StartServer();
+        }
     }
 
     public string Name => "ServerManager";
 
     public async Task Initialize()
     {
-        var op = Update();
+        var op = await Update();
         var reader = GetUpdatesReader(op);
         if (reader is null)
         {

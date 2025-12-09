@@ -9,7 +9,7 @@ public interface IServerManager : IInitializeable
     public void StartServer();
     public Task StopServer();
     public Task<ServerInfo> GetServerInfo();
-    public Guid Update();
+    public Task<Guid> Update();
     public Task CancelUpdate();
     public ChannelReader<ServerLogEntry>? GetUpdatesReader(Guid updateId);
     public IEnumerable<ServerLogEntry> GetServerLogs();
