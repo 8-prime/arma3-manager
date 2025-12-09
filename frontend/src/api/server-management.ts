@@ -51,12 +51,20 @@ export const subscribeUpdateStream = (
     const eventSource = new EventSource(`api/management/updates/${id}`);
 
     eventSource.addEventListener("update", (e) => {
-        console.log(e.data);
-        onMessage(e.data);
+        try {
+            const item: ServerLogEntryDTO = JSON.parse(e.data);
+            onMessage(item);
+        } catch (err) {
+            console.error("Failed to parse log entry:", e.data, err);
+        }
     });
 
     eventSource.addEventListener("done", (e) => {
-        onMessage(e.data);
+        try {
+            const item: ServerLogEntryDTO = JSON.parse(e.data);
+            onMessage(item);
+        } catch {
+        }
         onComplete();
         eventSource?.close();
     });

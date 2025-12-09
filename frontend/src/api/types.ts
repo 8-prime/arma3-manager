@@ -22,7 +22,7 @@ export type ServerLogSeverity =
     | "Error";
 
 export type ServerLogEntryDTO = {
-    timestamp: string; // ISO date string
+    timestamp: string;
     severity: ServerLogSeverity;
     message: string;
 }
