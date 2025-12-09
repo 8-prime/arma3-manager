@@ -297,7 +297,13 @@ public partial class ServerManager : IServerManager
             return;
         }
 
-        await reader.Completion;
+        await foreach (var _ in reader.ReadAllAsync())
+        {
+            // A naive mind would think one could just await reader.Completion.
+            // What a fool, of course Completion only fires when the writer completes the channel
+            // **AND** all the data from the Channel has been read. Thus read and do nothing with it
+            // ¯\_(ツ)_/¯
+        }
     }
 
     public Task OnInitializationCompleted()
