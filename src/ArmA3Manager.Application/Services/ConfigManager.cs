@@ -54,6 +54,7 @@ public class ConfigManager : IConfigManager
         return Task.CompletedTask;
     }
 
+    public event Func<ConfigurationBundle, CancellationToken, Task>? OnConfigurationChanged;
     public ConfigurationBundle? ActiveConfig { get; private set; }
 
     public async Task CreateConfig(ConfigurationBundle bundle, CancellationToken ct = default)
@@ -68,14 +69,10 @@ public class ConfigManager : IConfigManager
     {
         var active = await GetActiveConfig(ct);
         var writeToServer = active.Id == bundle.Id;
-        await using var configBundleFile =
-            File.Create(Path.Join(_configurationDirectory, $"{bundle.Id}.json"));
-        var configBundleJson = JsonSerializer.Serialize(bundle);
-        await configBundleFile.WriteAsync(Encoding.UTF8.GetBytes(configBundleJson), ct);
-
-        if (writeToServer)
+        await WriteJson(bundle, Path.Join(_configurationDirectory, $"{bundle.Id}.json"), ct);
+        if (writeToServer && OnConfigurationChanged is not null)
         {
-            await WriteConfigToServer(bundle, ct);
+            await OnConfigurationChanged.Invoke(bundle, ct);
         }
     }
 
@@ -108,7 +105,10 @@ public class ConfigManager : IConfigManager
         }
 
         await WriteConfigInfoForBundle(ActiveConfig, ct);
-        await WriteConfigToServer(ActiveConfig, ct);
+        if (OnConfigurationChanged is not null)
+        {
+            await OnConfigurationChanged.Invoke(ActiveConfig, ct);
+        }
     }
 
     public async Task<IEnumerable<ConfigurationBundle>> GetConfigs(CancellationToken ct = default)
@@ -182,13 +182,6 @@ public class ConfigManager : IConfigManager
     {
         _currentConfigInfo = new ConfigInfo(bundle);
         await WriteJson(_currentConfigInfo, _configInfoFileName, ct);
-    }
-
-    private async Task WriteConfigToServer(ConfigurationBundle configBundle, CancellationToken ct = default)
-    {
-        await using var file = File.Create(_configurationFileName);
-        await file.WriteAsync(Encoding.UTF8.GetBytes(configBundle.ServerConfig), ct);
-        // intentionally don't start server as maybe more settings need to be changed?!
     }
 
     private static async Task<T?> LoadJson<T>(string filePath, CancellationToken ct = default)

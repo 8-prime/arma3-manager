@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Channels;
 using ArmA3Manager.Application.Common.Builder;
 using ArmA3Manager.Application.Common.Constants;
@@ -38,6 +39,7 @@ public partial class ServerManager : IServerManager
         _serverLogBuffer = new RingBuffer<ServerLogEntry>(500);
         _updatesQueue = updatesQueue;
         _configManager = configManager;
+        _configManager.OnConfigurationChanged += WriteActiveConfig;
         _settings = managerSettings.Value;
         _steamCmdPath = managerSettings.Value.SteamCmdPath;
         _armaServerPath = managerSettings.Value.ArmaServerPath;
@@ -288,15 +290,13 @@ public partial class ServerManager : IServerManager
     public async Task Initialize()
     {
         var op = Update();
-        var reader = GetUpdatesReader(op)?.ReadAllAsync();
+        var reader = GetUpdatesReader(op);
         if (reader is null)
         {
             return;
         }
 
-        await foreach (var updateOperation in reader)
-        {
-        }
+        await reader.Completion;
     }
 
     public Task OnInitializationCompleted()
@@ -307,6 +307,25 @@ public partial class ServerManager : IServerManager
         }
 
         return Task.CompletedTask;
+    }
+
+    private async Task WriteActiveConfig(ConfigurationBundle configBundle, CancellationToken ct = default)
+    {
+        var wasRunning = _serverStatus == ServerStatus.Running;
+        if (wasRunning)
+        {
+            await StopServer();
+        }
+
+        await using (var file = File.Create(_configFilePath))
+        {
+            await file.WriteAsync(Encoding.UTF8.GetBytes(configBundle.ServerConfig), ct);
+        }
+
+        if (wasRunning)
+        {
+            StartServer();
+        }
     }
 
     [GeneratedRegex(@"\x1B\[[0-9;]*[A-Za-z]", RegexOptions.Compiled)]
