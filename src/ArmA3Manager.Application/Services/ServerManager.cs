@@ -220,6 +220,7 @@ public partial class ServerManager : IServerManager
     {
         if (_updateTask == null) return;
         await _updateTask.CancellationTokenSource.CancelAsync();
+        await _updateTask.Operation;
         _updatesQueue.ClearUpdates(_updateTask.Id);
         _updateTask = null;
     }
