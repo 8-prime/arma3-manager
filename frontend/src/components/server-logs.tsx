@@ -3,12 +3,18 @@ import type { ServerLogEntryDTO } from "@/api/types"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Terminal } from "lucide-react"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useLayoutEffect, useRef, useState } from "react"
 
 
 export function ServerLogs() {
     const [logs, setLogs] = useState<ServerLogEntryDTO[]>([])
     const scrollRef = useRef<HTMLDivElement>(null)
+
+    useLayoutEffect(() => {
+        if (scrollRef.current) {
+            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        }
+    }, [logs]);
 
     // Auto-scroll to bottom when new logs arrive
     useEffect(() => {
@@ -17,9 +23,6 @@ export function ServerLogs() {
         async function fetchInfo() {
             const data = await getServerLogs();
             if (isMounted) setLogs(data);
-            if (scrollRef.current) {
-                scrollRef.current.scrollTop = scrollRef.current.scrollHeight
-            }
         }
 
         fetchInfo();

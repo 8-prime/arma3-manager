@@ -245,7 +245,6 @@ public partial class ServerManager : IServerManager
             .WithAppUpdate(ArmA3Constants.ArmA3ServerId)
             .WithQuit()
             .Build();
-        Console.WriteLine($"Updating Server... with cmd {steamCmdString}");
         var cmd = Cli.Wrap(_steamCmdPath)
             .WithArguments(steamCmdString)
             .WithValidation(CommandResultValidation.ZeroExitCode);

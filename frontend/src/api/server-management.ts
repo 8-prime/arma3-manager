@@ -51,6 +51,7 @@ export const subscribeUpdateStream = (
     const eventSource = new EventSource(`api/management/updates/${id}`);
 
     eventSource.addEventListener("update", (e) => {
+        console.log(e.data);
         onMessage(e.data);
     });
 
