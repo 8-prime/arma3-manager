@@ -37,8 +37,8 @@ var app = builder.Build();
 app.MapOpenApi();
 // DOTNET would _like_ you to use MapStaticAssets. Cool, I love me some good gzip.
 // Please fix https://github.com/dotnet/aspnetcore/issues/59399 then.
-app.UseStaticFiles();
 app.UseDefaultFiles();
+app.UseStaticFiles();
 app.UseInitialization();
 
 if (app.Environment.IsDevelopment())
