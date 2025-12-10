@@ -4,6 +4,7 @@ An ArmA 3 dedicated server management interface.
 ## Features
 ### Automatic initial setup and download of server and base configuration
 ![](./resources/resource_init.png)
+
 When first starting the docker container the server is downloaded and a default configuration is created. Upon restart of the container a check for updates is being run. This is all part of the initialization phase
 
 ### Configuration Management
