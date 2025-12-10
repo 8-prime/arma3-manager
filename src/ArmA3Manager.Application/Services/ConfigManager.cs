@@ -70,7 +70,14 @@ public class ConfigManager : IConfigManager
         var active = await GetActiveConfig(ct);
         var writeToServer = active.Id == bundle.Id;
         await WriteJson(bundle, Path.Join(_configurationDirectory, $"{bundle.Id}.json"), ct);
-        if (writeToServer && OnConfigurationChanged is not null)
+
+        if (!writeToServer)
+        {
+            return;
+        }
+
+        ActiveConfig = bundle;
+        if (OnConfigurationChanged is not null)
         {
             await OnConfigurationChanged.Invoke(bundle, ct);
         }
