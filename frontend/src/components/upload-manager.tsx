@@ -64,13 +64,7 @@ export function UploadManager({
                 </div>
 
                 {progress !== null && (
-                    <div className="w-full h-2 bg-muted rounded">
-                        <div
-                            className="h-2 bg-primary rounded transition-all"
-                            style={{ width: `${progress}%` }}
-                        />
-                        <Progress value={progress} />
-                    </div>
+                    <Progress value={progress} />
                 )}
             </CardContent>
         </Card>

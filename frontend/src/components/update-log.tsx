@@ -14,7 +14,7 @@ export function UpdateLog({ logs }: Readonly<UpdateLogProps>) {
     // Auto-scroll to bottom when new logs arrive
     useEffect(() => {
         if (scrollRef.current) {
-            scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+            scrollRef.current.scrollIntoView(false)
         }
     }, [logs])
 
@@ -31,14 +31,23 @@ export function UpdateLog({ logs }: Readonly<UpdateLogProps>) {
             </CardHeader>
             <CardContent>
                 <ScrollArea className="h-[300px] w-full rounded-md border border-border bg-muted/30 p-4">
-                    <div ref={scrollRef} className="space-y-1">
-                        {logs.map((log) => (
-                            <div key={log.timestamp} className="flex items-start gap-2 font-mono text-sm">
-                                <span>[{log.severity}]</span>
-                                <span className="text-primary">[{new Date(log.timestamp).toLocaleTimeString()}]</span>
-                                <span className="text-foreground">{log.message}</span>
-                            </div>
-                        ))}
+                    <div className="space-y-1">
+                        {logs.map((log, idx) => {
+                            if (idx === logs.length - 1) {
+                                return (
+                                    <div ref={scrollRef} key={log.timestamp} className="flex items-start gap-2 font-mono text-sm">
+                                        <span>[{log.severity}]</span>
+                                        <span className="text-primary">[{new Date(log.timestamp).toLocaleTimeString()}]</span>
+                                        <span className="text-foreground">{log.message}</span>
+                                    </div>)
+                            }
+                            return (
+                                <div key={log.timestamp} className="flex items-start gap-2 font-mono text-sm">
+                                    <span>[{log.severity}]</span>
+                                    <span className="text-primary">[{new Date(log.timestamp).toLocaleTimeString()}]</span>
+                                    <span className="text-foreground">{log.message}</span>
+                                </div>)
+                        })}
                         {logs.length === 0 && (
                             <div className="text-muted-foreground font-mono text-sm">Waiting for update logs...</div>
                         )}

@@ -50,7 +50,7 @@ export function ServerControls({ serverInfo, reloadInfo }: Readonly<ServerContro
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <div className="gap-4 flex flex-row justify-evenly">
+                    <div className="gap-4 flex flex-row flex-wrap justify-evenly">
                         <Button
                             size="lg"
                             disabled={serverInfo?.status === "Running" || serverInfo?.status === "NotInitialized" || serverInfo?.status === "Updating"}

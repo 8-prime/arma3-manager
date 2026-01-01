@@ -63,8 +63,8 @@ export function ConfigEditor() {
     }, [])
 
     return (
-        <div className="flex gap-6">
-            <div className="w-64 space-y-4">
+        <div className="flex flex-wrap gap-6">
+            <div className="w-full md:w-64 space-y-4">
                 <div className="flex items-center justify-between">
                     <h3 className="text-sm font-medium">Configurations</h3>
                     <Button size="sm" variant="outline" onClick={handleAddConfig}>
