@@ -24,6 +24,8 @@ public partial class ServerManager : IServerManager
     private readonly string _serverDir;
     private readonly string _configFilePath;
     private readonly bool _autoStartServer;
+    private readonly bool _updateOnStart;
+
     private readonly ManagerSettings _settings;
     private readonly RingBuffer<ServerLogEntry> _serverLogBuffer;
     private readonly IConfigManager _configManager;
@@ -46,6 +48,7 @@ public partial class ServerManager : IServerManager
         _serverDir = managerSettings.Value.ServerDir;
         _configFilePath = managerSettings.Value.ConfigPath;
         _autoStartServer = managerSettings.Value.AutoStartServer;
+        _updateOnStart = managerSettings.Value.UpdateOnStart;
     }
 
     public void StartServer()
@@ -301,6 +304,10 @@ public partial class ServerManager : IServerManager
 
     public async Task Initialize()
     {
+        if (!_updateOnStart)
+        {
+            return;
+        }
         var op = await Update();
         var reader = GetUpdatesReader(op);
         if (reader is null)

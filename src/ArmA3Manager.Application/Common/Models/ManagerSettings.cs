@@ -14,4 +14,5 @@ public class ManagerSettings
     public string MissionsDir => Path.Combine(ServerDir, "mpmissions");
     public bool AutoStartServer { get; set; } = true;
     public bool SkipInitialization { get; set; } = false;
+    public bool UpdateOnStart { get; set; } = true;
 }
